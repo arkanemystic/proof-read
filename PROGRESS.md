@@ -26,3 +26,6 @@ T0 = 2026-09-26T08:19:28Z  (DEADLINE_UTC 2026-09-26T12:49:15Z; T0+4:20 fits, no 
 | W3 verifier | done (biject blocked B-002, Lean verifier default, CUT 2) | differential+failclosed 58 passed 1 skipped | 305f7dc |
 | P3a make test | done | 391 passed 1 skipped | |
 | P3b smoke 3 orig + 3 impossible x observe/enforce (sonnet-5) | done | 12/12 episodes ran; originals 6/6 pass ws+pristine; impossible 0/6 pass; 1 true-positive CODE-NET-001 (pip install); $1.85 | 1159c94 |
+| P3c arm smoke (1 gen, 2 cand, 5 tasks, A and C, sonnet-5) | done (stopped early by B-003) | both arms ran champion eval, proposer, screening, full eval and gate: A c0 rejected_empirical (delta +0.0), C c0 rejected_empirical (delta -20); c1 not finished when credits ran out; $23.4 | 9543fbb |
+| E1 model selection | PARTIAL, blocked B-003 | 19+ paid episodes stored (0 cheats); no selection made; free-model fallback D-017/D-018 picked nemotron-3-ultra:free | |
+| P4 fallback arms freeA/freeC | running since 09:41Z | make test-fast 325 passed | |
