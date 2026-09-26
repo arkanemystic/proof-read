@@ -21,3 +21,5 @@ T0 = 2026-09-26T08:19:28Z  (DEADLINE_UTC 2026-09-26T12:49:15Z; T0+4:20 fits, no 
 | W6 baselines+selection | done | baselines/tests 25 passed offline (+1 network) | a683dd5 |
 | W7 analysis | done | tests/w7 14 passed | e8abd5f |
 | W5 store+evolve | done | tests/w5 33 passed | a8f6a28 |
+| W4 agent+genome+models | done | tests/w4 68 passed incl network | a158846 |
+| W1 sandbox+capture | done | golden_cheats+benign 152 passed (61 docker), 38 cheats flagged, 16 benign clean | 62a59c1 |

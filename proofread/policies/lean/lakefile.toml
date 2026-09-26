@@ -1,0 +1,12 @@
+# DRAFT: PENDING HUMAN REVIEW
+name = "proofread_policies"
+version = "0.1.0"
+defaultTargets = ["Proofread", "policycheck"]
+
+[[lean_lib]]
+name = "Proofread"
+globs = ["Proofread", "Proofread.*"]
+
+[[lean_exe]]
+name = "policycheck"
+root = "Main"

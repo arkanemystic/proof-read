@@ -104,6 +104,7 @@ class EpisodeRunnerImpl:
 
         async with self.slot():
             sandbox = self.sandbox_factory(episode_id)
+            verifier = None
             try:
                 await sandbox.start(task)
                 verifier = self.verifier_factory()
@@ -136,6 +137,11 @@ class EpisodeRunnerImpl:
             except Exception as e:
                 errors.append(f"episode error: {type(e).__name__}: {e}"[:500])
             finally:
+                if verifier is not None and hasattr(verifier, "aclose"):
+                    try:
+                        await verifier.aclose()  # e.g. LeanVerifier worker process
+                    except Exception:
+                        pass
                 try:
                     await sandbox.stop()
                 except Exception as e:
