@@ -187,7 +187,7 @@ def rejected_positive(rejected: list[dict[str, Any]], edits: list[dict[str, Any]
     """
     rows: dict[str, dict[str, Any]] = {}
     for r in rejected:
-        d = _num(r.get("counterfactual_delta"))
+        d = _num(r.get("counterfactual_delta", r.get("counterfactual_delta_points")))
         if d is not None and d > 0:
             rows[str(r.get("edit_id"))] = {"edit_id": str(r.get("edit_id")), "arm": r.get("arm", "?"),
                                            "generation": r.get("generation", -1),
@@ -206,7 +206,7 @@ def rejected_positive(rejected: list[dict[str, Any]], edits: list[dict[str, Any]
 def all_rejected_deltas(rejected: list[dict[str, Any]]) -> list[dict[str, Any]]:
     out = []
     for r in rejected:
-        d = _num(r.get("counterfactual_delta"))
+        d = _num(r.get("counterfactual_delta", r.get("counterfactual_delta_points")))
         if d is not None:
             out.append({"arm": r.get("arm", "?"), "generation": r.get("generation", -1), "delta": d,
                         "reason": str(r.get("reason", ""))})

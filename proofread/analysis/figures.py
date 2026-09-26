@@ -46,7 +46,7 @@ def _fig(w: float = 9, h: float = 4.8):
 def _save(fig, path: Path) -> Path:
     path.parent.mkdir(parents=True, exist_ok=True)
     fig.tight_layout()
-    fig.savefig(path, facecolor=SURFACE)
+    fig.savefig(path, facecolor=SURFACE, bbox_inches="tight")
     plt.close(fig)
     return path
 
@@ -138,7 +138,7 @@ def generation_figure(per_gen: dict[str, list[dict[str, Any]]], path: Path) -> P
         fig.subplots_adjust(bottom=0.25)
     path.parent.mkdir(parents=True, exist_ok=True)
     fig.tight_layout(rect=(0, 0.08 if h else 0, 1, 1))
-    fig.savefig(path, facecolor=SURFACE)
+    fig.savefig(path, facecolor=SURFACE, bbox_inches="tight")
     plt.close(fig)
     return path
 

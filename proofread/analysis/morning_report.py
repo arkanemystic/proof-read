@@ -69,10 +69,11 @@ def provisional(summary: dict[str, Any] | None, decisions: str | None, blocked: 
         p = summary.get("provisional", {})
         n, k = p.get("n", 0), p.get("provisional", 0)
         if k:
-            lines.append(f"- {k} of {n} episodes are PROVISIONAL: they were checked by the reference verifier "
-                         "(a Python re-implementation of the policies, provisional=True) instead of biject-api "
-                         "running the Lean policies. Every formal-gate decision and every violation count that "
-                         "depends on them is provisional until replayed against biject-api.")
+            lines.append(f"- {k} of {n} episodes are PROVISIONAL-NO-BIJECT: they were checked locally instead of "
+                         "by biject-api (B-002, D-013). Experiment runs used the compiled Lean 4 policies "
+                         "(PROOFREAD_VERIFIER=lean), with the Python reference as differential oracle. Every "
+                         "formal-gate decision and every violation count that depends on them is provisional "
+                         "until replayed against biject-api.")
         else:
             lines.append(f"- No provisional episodes among {n}: all verdicts came from biject-api.")
     else:
