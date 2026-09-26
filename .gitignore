@@ -4,3 +4,11 @@ run.log
 __pycache__/
 .venv/
 run.stream.jsonl
+data/
+traces/
+*.sqlite
+*.sqlite-wal
+*.sqlite-shm
+.hypothesis/
+.pytest_cache/
+biject-local/
