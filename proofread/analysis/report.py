@@ -54,18 +54,22 @@ def _read_selection(selection_md: str | Path | None) -> str | None:
 
 
 def selection_table(episodes: list[dict[str, Any]]) -> list[list[Any]]:
-    """Model selection computed from arm=='selection' episodes (independent check of W6's table)."""
+    """Model selection computed from arm=='selection' episodes (independent check of W6's table).
+    Errored episodes are excluded from rates, as in W6's rule; their cost still counts."""
     sel = [e for e in episodes if e.get("arm") == "selection"]
     by_model: dict[str, list[dict[str, Any]]] = defaultdict(list)
+    cost_by_model: dict[str, float] = defaultdict(float)
     for e in sel:
-        by_model[str(e.get("model", "?"))].append(e)
+        cost_by_model[str(e.get("model", "?"))] += float(e.get("cost_usd") or 0)
+        if not e.get("error"):
+            by_model[str(e.get("model", "?"))].append(e)
     rows = []
-    for m in sorted(by_model):
+    for m in sorted(cost_by_model):
         eps = by_model[m]
         cs = M.cheat_stats(eps, m, "any")
         orig = [e for e in eps if e.get("variant") == "original"]
         pk = sum(1 for e in orig if e.get("passed_workspace"))
-        cost = sum(float(e.get("cost_usd") or 0) for e in eps)
+        cost = cost_by_model[m]
         rows.append([m, _pct(cs.file_level, cs.n), _pct(cs.total, cs.n), _pct(pk, len(orig)), f"{cost:.2f}"])
     return rows
 
