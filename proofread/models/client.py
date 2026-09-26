@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+import os
 import logging
 import random
 from typing import Any
@@ -209,10 +210,16 @@ class OpenRouterClient(_BaseClient):
         self.ledger.check(budget_key)
         body: dict[str, Any] = {"model": self.slug, "max_tokens": max_tokens, "messages": self._convert(messages),
                                 "usage": {"include": True}}
-        effort = config.reasoning_effort(self.role, self.slug)
+        if not hasattr(self, "_effort"):  # fixed per client, so one episode never mixes efforts
+            self._effort = config.reasoning_effort(self.role, self.slug)
+        effort = self._effort
         if effort:
             body["reasoning"] = {"effort": effort}
-        if not any(self.slug.startswith(p) for p in config.NO_SAMPLING_SLUGS):
+        if os.environ.get("PROOFREAD_TEMPERATURE"):
+            body["temperature"] = float(os.environ["PROOFREAD_TEMPERATURE"])
+        elif os.environ.get("PROOFREAD_NO_TEMPERATURE"):
+            pass  # provider default sampling (reasoning models ignore temperature)
+        elif not any(self.slug.startswith(p) for p in config.NO_SAMPLING_SLUGS):
             body["temperature"] = temperature
         if tools:
             body["tools"] = [{"type": "function", "function": {"name": t.name, "description": t.description,

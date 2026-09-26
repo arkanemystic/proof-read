@@ -11,6 +11,7 @@ mismatches all count as the FAILCLOSED violation.
 from __future__ import annotations
 
 import json
+import os
 import posixpath
 import time
 from dataclasses import dataclass, field
@@ -26,6 +27,17 @@ from .tools import TOOL_SPECS
 
 PROMPT_ORDER = ("role", "task_approach", "testing", "finish")
 ATTR_POLICY = "CODE-ATTR-001"
+
+
+class EpisodeCostAbort(Exception):
+    """Episode cost reached PROOFREAD_EPISODE_COST_CAP_USD; recorded as aborted_cost."""
+
+
+def _est_tokens(m: ChatMessage) -> int:
+    n = len(m.content or "")
+    for tc in m.tool_calls:
+        n += len(json.dumps(tc.arguments))
+    return n // 4 + 4
 
 
 class Tracer:
@@ -316,7 +328,7 @@ class AgentLoop:
         n = self.genome.context.keep_last_n_turns
         idx = [i for i, m in enumerate(rest) if m.role == "assistant"]
         if len(idx) <= n:
-            return list(self.history)
+            return self._cap_tokens(list(self.history))
         cut = idx[-n]
         dropped, kept = rest[:cut], rest[cut:]
         note = f"[{sum(1 for m in dropped if m.role == 'assistant')} earlier turns omitted]"
@@ -328,7 +340,24 @@ class AgentLoop:
                     calls.append(f"{tc.name}({truncate(str(arg), 80)})")
             if calls:
                 note += "\nEarlier tool calls: " + "; ".join(calls[-40:])
-        return head + [ChatMessage(role="user", content=note)] + kept
+        return self._cap_tokens(head + [ChatMessage(role="user", content=note)] + kept)
+
+    def _cap_tokens(self, msgs: list[ChatMessage]) -> list[ChatMessage]:
+        """Cap prompt context (PROOFREAD_CONTEXT_TOKENS, chars/4 estimate) by blanking oldest tool outputs first."""
+        cap = int(os.environ.get("PROOFREAD_CONTEXT_TOKENS") or 0)
+        if not cap:
+            return msgs
+        msgs = list(msgs)
+        total = sum(_est_tokens(m) for m in msgs)
+        for i, m in enumerate(msgs):
+            if total <= cap:
+                break
+            if m.role == "tool" and len(m.content or "") > 40:
+                total -= _est_tokens(m)
+                msgs[i] = ChatMessage(role="tool", content="[older tool output dropped to fit context]",
+                                      tool_call_id=m.tool_call_id)
+                total += _est_tokens(msgs[i])
+        return msgs
 
     # ------------------------------------------------------------------ main loop
 
@@ -345,10 +374,14 @@ class AgentLoop:
             resp = await self.client.complete(self.window(), tools=self.specs or None, max_tokens=self.max_tokens,
                                               temperature=self.temperature, budget_key=self.budget_key)
             self.state.cost_usd += resp.cost_usd
+            cost_cap = float(os.environ.get("PROOFREAD_EPISODE_COST_CAP_USD") or 0)
             self.history.append(ChatMessage(role="assistant", content=resp.text, tool_calls=resp.tool_calls))
             self.tracer.write("model", turn=self.state.turns, text=resp.text,
                               tool_calls=[tc.model_dump() for tc in resp.tool_calls], stop_reason=resp.stop_reason,
                               input_tokens=resp.input_tokens, output_tokens=resp.output_tokens, cost_usd=resp.cost_usd)
+            if cost_cap and self.state.cost_usd >= cost_cap:
+                self.tracer.write("aborted_cost", cost_usd=self.state.cost_usd, cap=cost_cap)
+                raise EpisodeCostAbort(f"episode cost {self.state.cost_usd:.4f} >= {cost_cap:.2f}")
             if not resp.tool_calls and resp.stop_reason in ("length", "max_tokens") and self.state.turns < wf.max_turns:
                 msg = "Your previous response hit the output limit before finishing. Continue, more concisely."
                 self.history.append(ChatMessage(role="user", content=msg))
@@ -389,5 +422,5 @@ class AgentLoop:
         return failed
 
 
-__all__ = ["AgentLoop", "LoopState", "Tracer", "truncate", "build_system_prompt", "build_first_user_message",
+__all__ = ["AgentLoop", "EpisodeCostAbort", "LoopState", "Tracer", "truncate", "build_system_prompt", "build_first_user_message",
            "BudgetExceeded"]

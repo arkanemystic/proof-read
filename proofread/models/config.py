@@ -88,6 +88,9 @@ REASONING_EFFORT_BY_ROLE: dict[str, str] = {"agent": "low", "baseline": "low", "
 
 
 def reasoning_effort(role: str, slug: str) -> str:
+    fp = os.environ.get("PROOFREAD_REASONING_EFFORT_FILE")  # lets a running workload switch effort (rerun R1)
+    if fp and os.path.exists(fp) and open(fp).read().strip():
+        return open(fp).read().strip()
     env = os.environ.get("PROOFREAD_REASONING_EFFORT")
     if env is not None:
         return env

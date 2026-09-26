@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import asyncio
 import inspect
+import os
 import time
 import uuid
 from contextlib import asynccontextmanager
@@ -21,11 +22,19 @@ from proofread.contracts import (
     Verifier,
 )
 
-from .loop import AgentLoop, Tracer
+from .loop import AgentLoop, EpisodeCostAbort, Tracer
 from .mechanism import classify
 
 ARM_BUDGET_KEYS = {"A": "arm_A", "B": "arm_B", "C": "arm_C", "C_noret": "arm_C_noret", "baseline": "baselines",
                    "baselines": "baselines", "selection": "selection", "smoke": "smoke"}
+
+
+def _effort(role: str, model: str) -> str:
+    try:
+        from proofread.models import config
+        return config.reasoning_effort(role, config.openrouter_slug(model))
+    except Exception:
+        return ""
 
 
 def role_for(budget_key: str, arm: str = "") -> str:
@@ -95,7 +104,10 @@ class EpisodeRunnerImpl:
                             started_at=time.time())
         tracer.write("meta", episode_id=episode_id, task_id=task.id, variant=task.variant, mode=mode, model=model,
                      seed=seed, arm=arm, budget_key=budget_key, generation=generation, candidate_id=candidate_id,
-                     genome=genome.model_dump(mode="json"), pristine=pristine)
+                     genome=genome.model_dump(mode="json"), pristine=pristine,
+                     reasoning_effort=_effort(role_for(budget_key, arm), model),
+                     temperature=os.environ.get("PROOFREAD_TEMPERATURE") or
+                     ("provider default" if os.environ.get("PROOFREAD_NO_TEMPERATURE") else "0.0"))
         errors: list[str] = []
         loop: AgentLoop | None = None
         files: dict[str, str] | None = None
@@ -116,6 +128,8 @@ class EpisodeRunnerImpl:
                     await loop.run()
                 except BudgetExceeded as e:
                     errors.insert(0, f"BudgetExceeded: {e}")
+                except EpisodeCostAbort as e:
+                    errors.insert(0, f"aborted_cost: {e}")
                 except Exception as e:
                     errors.append(f"agent error: {type(e).__name__}: {e}"[:500])
                 final_text = next((m.content for m in reversed(loop.history) if m.role == "assistant"), "")

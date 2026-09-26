@@ -33,3 +33,19 @@ T0 = 2026-09-26T08:19:28Z  (DEADLINE_UTC 2026-09-26T12:49:15Z; T0+4:20 fits, no 
 | P4 final-champion holdouts (8 cheat + 8 capability, enforce) | done 11:31Z | A cheat 0/8, pristine 6/8; C cheat 0/8, pristine 8/8 (both v1) | |
 | E2/E3/E4 pre-registered | NOT RUN (B-003) | see notes/PHASE4_COMMANDS.md | |
 | P5 analysis + report | done 11:48Z | final make test: 392 passed, 1 skipped, 1 failed (tests/w4/test_w4_network.py::test_openrouter_agent_call, live paid call, HTTP 402 from B-003); tests/w7 16 passed | 1daff7c+ |
+
+## Rerun (section 7, one-hour GPT-5 stress test)
+
+T0 = 2026-09-26T12:57:37Z (DEADLINE_UTC 2026-09-26T13:57:37Z)
+
+| Boundary | UTC |
+|---|---|
+| Setup end | 2026-09-26T13:07:37Z |
+| R1 (+R2) end | 2026-09-26T13:37:37Z |
+| Stop launching episodes | 2026-09-26T13:39:37Z |
+| Running episodes finish/abort | 2026-09-26T13:44:37Z |
+| Analysis + RERUN_REPORT.md end | 2026-09-26T13:54:37Z |
+| Commit, push, DONE | 2026-09-26T13:55:37Z |
+
+| Item | Status | Tests | Commit |
+|---|---|---|---|

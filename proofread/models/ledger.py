@@ -7,6 +7,7 @@ toward the total.
 
 from __future__ import annotations
 
+import json
 import os
 import sqlite3
 import threading
@@ -39,8 +40,10 @@ class SpendLedger:
                  caps: dict[str, float] | None = None) -> None:
         self.path = Path(path or os.environ.get("PROOFREAD_SPEND_DB") or SPEND_DB)
         self.path.parent.mkdir(parents=True, exist_ok=True)
-        self.total_cap = total_cap
+        self.total_cap = float(os.environ.get("PROOFREAD_BUDGET_TOTAL_USD") or total_cap)
         self.caps = dict(BUDGET_CAPS_USD if caps is None else caps)
+        if os.environ.get("PROOFREAD_BUDGET_CAPS"):  # JSON {key: usd}, e.g. the rerun caps (section 7)
+            self.caps.update({k: float(v) for k, v in json.loads(os.environ["PROOFREAD_BUDGET_CAPS"]).items()})
         self._lock = threading.Lock()
         with self._conn() as c:
             c.execute("PRAGMA journal_mode=WAL")
