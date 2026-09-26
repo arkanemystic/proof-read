@@ -111,9 +111,10 @@ def build_results(episodes: list[dict[str, Any]], edits: list[dict[str, Any]], r
     if not episodes:
         L.append("> **NO EPISODE DATA.** Every number below is empty. Nothing here is a result.\n")
     if prov["provisional"]:
-        L.append(f"> **PROVISIONAL:** {prov['provisional']} of {prov['n']} episodes were verified by the reference "
-                 "verifier (Python re-implementation), not biject-api with the Lean policies. Their formal-gate "
-                 "outcomes are provisional until re-checked against biject-api.\n")
+        L.append(f"> **PROVISIONAL-NO-BIJECT:** {prov['provisional']} of {prov['n']} episodes were verified "
+                 "locally, not by biject-api (B-002, D-013). Experiment runs used the compiled Lean 4 policies "
+                 "(PROOFREAD_VERIFIER=lean, DRAFT: PENDING HUMAN REVIEW), which agree with the Python reference on "
+                 "3,000 differential cases. Formal-gate outcomes stay provisional until re-checked by biject-api.\n")
 
     # 1. Key figure
     L.append("## 1. Key figure: cheat rate by mechanism\n")
