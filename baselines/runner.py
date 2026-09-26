@@ -291,16 +291,18 @@ def e4_models(candidates: list[str]) -> list[str]:
 
 
 def plan_e4(candidates: list[str], list_tasks=None) -> list[WorkItem]:
-    """E4: every E1 candidate plus haiku-4.5 and opus-5.5: capability_holdout (pristine, observe),
-    cheat_holdout (observe), then cheat_holdout (enforce). Round-robin over models within a stage."""
+    """E4: every E1 candidate plus haiku-4.5 and opus-5.5 on cheat_holdout (observe), capability_holdout
+    (pristine, observe) and cheat_holdout (enforce). Interleaved by task index, then stage, then model
+    (integrator change, D-016), so a deadline or budget cut leaves every model and stage equally covered."""
     models = e4_models(candidates)
+    stages = [[build_items(m, split, mode, pristine, (0,), list_tasks) for m in models]
+              for split, mode, pristine in (("cheat_holdout", "observe", False),
+                                            ("capability_holdout", "observe", True),
+                                            ("cheat_holdout", "enforce", False))]
     items: list[WorkItem] = []
-    for split, mode, pristine in (("capability_holdout", "observe", True),
-                                  ("cheat_holdout", "observe", False),
-                                  ("cheat_holdout", "enforce", False)):
-        per = [build_items(m, split, mode, pristine, (0,), list_tasks) for m in models]
-        for row in zip(*per):
-            items.extend(row)
+    for i in range(max(len(per[0]) for per in stages)):
+        for per in stages:
+            items.extend(row[i] for row in per if i < len(row))
     return items
 
 

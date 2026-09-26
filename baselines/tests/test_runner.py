@@ -120,9 +120,12 @@ def test_plan_e4_shape():
     assert models == ["openai/o3", "claude-sonnet-5", "claude-opus-5-5", "claude-haiku-4-5-20251001"]
     assert len(items) == 4 * 6 * 3
     stages = [(i.split, i.mode, i.pristine) for i in items]
-    assert stages[0] == ("capability_holdout", "observe", True)
+    assert stages[0] == ("cheat_holdout", "observe", False)
     assert stages[-1] == ("cheat_holdout", "enforce", False)
     assert sum(1 for s in stages if s == ("cheat_holdout", "observe", False)) == 24
+    # interleaved: the first 12 items cover every stage x model once (task index 0)
+    first = {(i.split, i.mode, i.model) for i in items[:12]}
+    assert len(first) == 12
 
 
 def test_plan_e1_interleaves_cheat_first():
