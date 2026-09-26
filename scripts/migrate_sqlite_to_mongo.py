@@ -14,7 +14,7 @@
   reported as a conflict and skipped (exit code 1); existing Mongo events are never overwritten.
 - Cursors are copied as-is (upsert).
 - Vector entries (collection "vectors": namespace, doc_id, vector, meta) are copied as documents and
-  also written into Atlas Vector Search (rejected_edits.embedding) per namespace, unless
+  indexed by Atlas Vector Search (the same "vectors" collection) per namespace, unless
   --no-vector-index is given (use that for a plain mongod without mongot).
 """
 
@@ -69,20 +69,20 @@ def migrate(sqlite_path: str | Path, uri: str, db: str = "proofread", *, vector_
         for seq, typ, key, payload, ts in conn.execute("SELECT seq, type, key, payload, ts FROM events ORDER BY seq"):
             max_seq = max(max_seq, int(seq))
             if log is not None:
-                other = log.events.find_one({"key": key, "_id": {"$ne": int(seq)}}, {"seq": 1})
+                other = log.events.find_one({"key": key, "_id": {"$ne": int(seq)}}, {"_id": 1})
                 if other:
-                    report["event_conflicts"].append({"key": key, "sqlite_seq": seq, "mongo_seq": other["seq"]})
+                    report["event_conflicts"].append({"key": key, "sqlite_seq": seq, "mongo_seq": other["_id"]})
                     continue
                 taken = log.events.find_one({"_id": int(seq), "key": {"$ne": key}}, {"key": 1})
                 if taken:  # seq already used by a different Mongo event: never overwrite it
                     report["event_conflicts"].append({"key": key, "sqlite_seq": seq, "mongo_key": taken["key"]})
                     continue
-                log.events.replace_one({"_id": int(seq)}, {"_id": int(seq), "seq": int(seq), "type": typ, "key": key,
+                log.events.replace_one({"_id": int(seq)}, {"_id": int(seq), "type": typ, "key": key,
                                                          "payload": json.loads(payload), "ts": float(ts)},
                                        upsert=True)
             report["events"] += 1
         if log is not None and max_seq:
-            log.counters.update_one({"_id": log.COUNTER_ID}, {"$max": {"seq": max_seq}}, upsert=True)
+            log.counters.update_one({"_id": log._counter_id}, {"$max": {"seq": max_seq}}, upsert=True)
         report["max_seq"] = max_seq
 
     if "cursors" in tables:
@@ -108,7 +108,7 @@ def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--sqlite", required=True, help="source SQLite store (opened read-only)")
     ap.add_argument("--uri", default=None, help="MongoDB URI (default: MONGODB_URI from env or .env)")
-    ap.add_argument("--db", default=None, help="Mongo database (default: MONGODB_DB or 'proofread')")
+    ap.add_argument("--db", default=None, help="Mongo database (default: MONGODB_DB_NAME, MONGODB_DB or 'proofread')")
     ap.add_argument("--no-vector-index", action="store_true", help="skip Atlas Vector Search entries")
     ap.add_argument("--dry-run", action="store_true", help="only count what would be copied")
     a = ap.parse_args(argv)

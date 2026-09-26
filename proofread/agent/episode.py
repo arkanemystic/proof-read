@@ -79,7 +79,8 @@ class EpisodeRunnerImpl:
     def __init__(self, *, verifier_factory: Callable[[], Verifier], sandbox_factory: Callable[[str], Sandbox],
                  client_factory: Callable[[str, str], Any], workspace_grader: Grader,
                  pristine_grader: Any | None = None, trace_dir: str | Path = "traces",
-                 slot: Callable[[], Any] | None = None, max_tokens: int = 16000) -> None:
+                 slot: Callable[[], Any] | None = None, max_tokens: int = 16000,
+                 action_sink: Callable[[dict[str, Any]], None] | None = None) -> None:
         self.verifier_factory = verifier_factory
         self.sandbox_factory = sandbox_factory
         self.client_factory = client_factory
@@ -88,6 +89,7 @@ class EpisodeRunnerImpl:
         self.trace_dir = Path(trace_dir).resolve()
         self.slot = slot or default_slot_factory()
         self.max_tokens = max_tokens
+        self.action_sink = action_sink
 
     async def __call__(self, task: Task, genome: Genome, *, mode: Mode, model: str, seed: int = 0, arm: str = "",
                        budget_key: str = "", pristine: bool = False, generation: int = -1,
@@ -97,7 +99,7 @@ class EpisodeRunnerImpl:
         episode_id = f"{arm or 'ep'}-{uuid.uuid4().hex[:12]}"
         budget_key = budget_key or ARM_BUDGET_KEYS.get(arm, "")
         trace_path = self.trace_dir / f"{episode_id}.jsonl"
-        tracer = Tracer(trace_path)
+        tracer = Tracer(trace_path, sink=self.action_sink)
         res = EpisodeResult(episode_id=episode_id, task_id=task.id, variant=task.variant,
                             genome_hash=genome.content_hash(), model=model, mode=mode, seed=seed, arm=arm,
                             generation=generation, candidate_id=candidate_id, trace_path=str(trace_path),
@@ -202,8 +204,10 @@ def make_episode_runner(*, verifier_factory: Callable[[], Verifier] | None = Non
                         client_factory: Callable[[str, str], Any] | None = None,
                         workspace_grader: Grader | None = None, pristine_grader: Any | None = None,
                         trace_dir: str | Path = "traces", slot: Callable[[], Any] | None = None,
-                        max_tokens: int = 16000) -> EpisodeRunnerImpl:
-    """Build an EpisodeRunner. Any omitted component resolves to the real implementation lazily."""
+                        max_tokens: int = 16000,
+                        action_sink: Callable[[dict[str, Any]], None] | None = None) -> EpisodeRunnerImpl:
+    """Build an EpisodeRunner. Any omitted component resolves to the real implementation lazily.
+    `action_sink` receives every trace record (proofread.store.backend.action_sink for MongoDB)."""
     if sandbox_factory is None:
         from .wiring import real_sandbox_factory
 
@@ -229,4 +233,5 @@ def make_episode_runner(*, verifier_factory: Callable[[], Verifier] | None = Non
             pristine_grader = None
     return EpisodeRunnerImpl(verifier_factory=verifier_factory, sandbox_factory=sandbox_factory,
                              client_factory=client_factory, workspace_grader=workspace_grader,
-                             pristine_grader=pristine_grader, trace_dir=trace_dir, slot=slot, max_tokens=max_tokens)
+                             pristine_grader=pristine_grader, trace_dir=trace_dir, slot=slot, max_tokens=max_tokens,
+                             action_sink=action_sink)
