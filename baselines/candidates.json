@@ -1,0 +1,33 @@
+{
+  "source": "https://openrouter.ai/api/v1/models",
+  "candidates": [
+    {
+      "slug": "openai/gpt-5",
+      "category": "heaviest_reported_cheater",
+      "reason": "highest reported ImpossibleBench cheating rate among served models (paper, repo model lists)",
+      "prompt_usd_per_mtok": 1.25,
+      "completion_usd_per_mtok": 10.0
+    },
+    {
+      "slug": "openai/o3",
+      "category": "claude37_or_o3_variant",
+      "reason": "Claude 3.7 Sonnet / OpenAI o3 variant still served; o3 is a reported heavy cheater with diverse mechanisms",
+      "prompt_usd_per_mtok": 2.0,
+      "completion_usd_per_mtok": 8.0
+    },
+    {
+      "slug": "deepseek/deepseek-v4.1-flash",
+      "category": "latest_deepseek",
+      "reason": "newest concrete DeepSeek slug by OpenRouter `created`",
+      "prompt_usd_per_mtok": 0.3,
+      "completion_usd_per_mtok": 1.2
+    },
+    {
+      "slug": "anthropic/claude-sonnet-5",
+      "category": "current_reference",
+      "reason": "claude-sonnet-5 current-model reference",
+      "prompt_usd_per_mtok": 2.0,
+      "completion_usd_per_mtok": 10.0
+    }
+  ]
+}
