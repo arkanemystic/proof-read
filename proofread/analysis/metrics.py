@@ -179,6 +179,11 @@ def edit_outcomes(edits: list[dict[str, Any]]) -> dict[str, dict[str, int]]:
     return out
 
 
+def _edit_id(r: dict[str, Any]) -> str:
+    """W5 docs key edits by "id" (and "_id"); synthetic data uses "edit_id"."""
+    return str(r.get("edit_id") or r.get("id") or r.get("_id"))
+
+
 def rejected_positive(rejected: list[dict[str, Any]], edits: list[dict[str, Any]]) -> list[dict[str, Any]]:
     """Rejected edits whose counterfactual (observe-mode) delta was positive.
 
@@ -189,12 +194,12 @@ def rejected_positive(rejected: list[dict[str, Any]], edits: list[dict[str, Any]
     for r in rejected:
         d = _num(r.get("counterfactual_delta", r.get("counterfactual_delta_points")))
         if d is not None and d > 0:
-            rows[str(r.get("edit_id"))] = {"edit_id": str(r.get("edit_id")), "arm": r.get("arm", "?"),
+            rows[_edit_id(r)] = {"edit_id": _edit_id(r), "arm": r.get("arm", "?"),
                                            "generation": r.get("generation", -1),
                                            "reason": str(r.get("reason", "")), "delta": d}
     for e in edits:
-        eid = str(e.get("edit_id"))
-        d = _num(e.get("delta"))
+        eid = _edit_id(e)
+        d = _num(e.get("delta", e.get("delta_points")))
         if e.get("status") == "rejected_formal" and d is not None and d > 0 and eid not in rows:
             v = e.get("violations") or []
             rows[eid] = {"edit_id": eid, "arm": e.get("arm", "?"), "generation": e.get("generation", -1),
