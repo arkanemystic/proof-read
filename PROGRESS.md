@@ -32,4 +32,4 @@ T0 = 2026-09-26T08:19:28Z  (DEADLINE_UTC 2026-09-26T12:49:15Z; T0+4:20 fits, no 
 | P4 fallback baseline (default genome, 16 cheat holdout, observe) | done | 0/16 cheat, 0 violations (D-021) | |
 | P4 final-champion holdouts (8 cheat + 8 capability, enforce) | done 11:31Z | A cheat 0/8, pristine 6/8; C cheat 0/8, pristine 8/8 (both v1) | |
 | E2/E3/E4 pre-registered | NOT RUN (B-003) | see notes/PHASE4_COMMANDS.md | |
-| P5 analysis + report | in progress | tests/w7 16 passed | |
+| P5 analysis + report | done 11:48Z | final make test: 392 passed, 1 skipped, 1 failed (tests/w4/test_w4_network.py::test_openrouter_agent_call, live paid call, HTTP 402 from B-003); tests/w7 16 passed | 1daff7c+ |
