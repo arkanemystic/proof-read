@@ -12,3 +12,4 @@ traces/
 .hypothesis/
 .pytest_cache/
 biject-local/
+logs/
