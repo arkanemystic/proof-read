@@ -16,3 +16,4 @@ T0 = 2026-09-26T08:19:28Z  (DEADLINE_UTC 2026-09-26T12:49:15Z; T0+4:20 fits, no 
 | Item | Status | Tests | Commit |
 |---|---|---|---|
 | P1 contracts | done | 6 passed (make test) | (this commit) |
+| P2 launch W1..W7 | launched 08:23Z in one message | | |
