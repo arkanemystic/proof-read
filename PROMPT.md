@@ -24,6 +24,9 @@ Work until done or until budgets are exhausted, then create a file named DONE in
   (inner agent when served via OpenRouter, S6b selection runs, non-Anthropic baselines), BASELINE_API_KEY (baselines only), optional OPENAI_API_KEY and
   GOOGLE_API_KEY (baselines only). Never use one role's key for another role. Claude Code itself runs
   on the subscription; never put its token in .env and never set ANTHROPIC_API_KEY.
+- AGENT_API_KEY is an OpenRouter key, not an Anthropic key. Route ALL inner-agent calls, including
+  smoke runs and any Anthropic model, through OpenRouter's OpenAI-compatible endpoint
+  (https://openrouter.ai/api/v1) using OpenRouter model slugs. Resolve slugs from its model list.
 - Never print, log, or commit secrets. .env stays gitignored.
 - Do not install system packages with sudo. Do not touch anything outside /home/dev/work and /tmp.
 - /home/dev/work/biject-api is READ-ONLY for you. Read its CLAUDE.md, AGENTS.md and docs. Never
