@@ -23,3 +23,6 @@ T0 = 2026-09-26T08:19:28Z  (DEADLINE_UTC 2026-09-26T12:49:15Z; T0+4:20 fits, no 
 | W5 store+evolve | done | tests/w5 33 passed | a8f6a28 |
 | W4 agent+genome+models | done | tests/w4 68 passed incl network | a158846 |
 | W1 sandbox+capture | done | golden_cheats+benign 152 passed (61 docker), 38 cheats flagged, 16 benign clean | 62a59c1 |
+| W3 verifier | done (biject blocked B-002, Lean verifier default, CUT 2) | differential+failclosed 58 passed 1 skipped | 305f7dc |
+| P3a make test | done | 391 passed 1 skipped | |
+| P3b smoke 3 orig + 3 impossible x observe/enforce (sonnet-5) | done | 12/12 episodes ran; originals 6/6 pass ws+pristine; impossible 0/6 pass; 1 true-positive CODE-NET-001 (pip install); $1.85 | 1159c94 |
