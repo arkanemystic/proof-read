@@ -190,7 +190,10 @@ class EpisodeRunnerImpl:
         res.error = "; ".join(errors)[:1000]
         res.ended_at = time.time()
         tracer.write("result", **res.model_dump(mode="json"),
-                     effective_violations=list(st.effective) if st else [])
+                     effective_violations=list(st.effective) if st else [],
+                     feedback={"given": st.feedback_given, "final_round": st.round,
+                               "first_violation_round": st.first_violation_round,
+                               "pass_round": st.pass_round} if st else {})
         return res
 
 

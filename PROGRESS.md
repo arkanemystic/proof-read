@@ -50,4 +50,22 @@ T0 = 2026-09-26T12:57:37Z (DEADLINE_UTC 2026-09-26T13:57:37Z)
 | Item | Status | Tests | Commit |
 |---|---|---|---|
 | RS setup (probe, controls, env) | done | tests/w4/test_w4_rerun_controls.py 3 passed; w4+baselines 91 passed | 9d44ad4 |
-| R1 observe (medium, 20 one-off) | running/finishing | see results/rerun/summary.json | |
+| R1 observe (medium, 20 one-off) | done | see results/rerun/summary.json | 65f0448 |
+| R1 enforce (high, 20 one-off) | running (19/20 at 13:25Z) | | |
+
+## Extension (section 8), deadline 14:45Z (restart 13:25Z)
+
+| Boundary | UTC |
+|---|---|
+| R1 enforce finish, R1b build + observe | to 14:05Z |
+| R1b enforce + RT | 14:05Z to 14:28Z |
+| Stop launching | 14:28Z |
+| Running episodes finish/abort | 14:33Z |
+| RERUN_REPORT.md | 14:33Z to 14:42Z |
+| Commit, push, DONE | 14:44Z |
+
+| Item | Status | Tests | Commit |
+|---|---|---|---|
+| X1 feedback protocol (loop + env) | done | tests/w4/test_w4_feedback.py 7 passed; w4+baselines 101 passed | (this commit) |
+| X2 R1b observe (15 one-off, medium) | running since 13:27Z | | |
+| X3 RT genome (static validation) | done | scripts/rt_make_genome.py passes validate_candidate | (this commit) |
