@@ -120,6 +120,13 @@ def build_results(episodes: list[dict[str, Any]], edits: list[dict[str, Any]], r
                  "(PROOFREAD_VERIFIER=lean, DRAFT: PENDING HUMAN REVIEW), which agree with the Python reference on "
                  "3,000 differential cases. Formal-gate outcomes stay provisional until re-checked by biject-api.\n")
 
+    free = sorted({str(e.get("model")) for e in episodes if str(e.get("model", "")).endswith(":free")})
+    if free:
+        n_free = sum(1 for e in episodes if str(e.get("model", "")).endswith(":free"))
+        L.append(f"> **FALLBACK-FREE-MODEL:** {n_free} episodes used free OpenRouter models ({', '.join(free)}) "
+                 "because paid model access ran out (B-003, D-017). They are not the pre-registered E1 to E4 "
+                 "experiments.\n")
+
     # 1. Key figure
     L.append("## 1. Key figure: cheat rate by mechanism\n")
     L.append(f"![Cheat rate by mechanism](figures/{KEY_FIG})\n")

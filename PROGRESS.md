@@ -29,5 +29,7 @@ T0 = 2026-09-26T08:19:28Z  (DEADLINE_UTC 2026-09-26T12:49:15Z; T0+4:20 fits, no 
 | P3c arm smoke (1 gen, 2 cand, 5 tasks, A and C, sonnet-5) | done (stopped early by B-003) | both arms ran champion eval, proposer, screening, full eval and gate: A c0 rejected_empirical (delta +0.0), C c0 rejected_empirical (delta -20); c1 not finished when credits ran out; $23.4 | 9543fbb |
 | E1 model selection | PARTIAL, blocked B-003 | 19+ paid episodes stored (0 cheats); no selection made; free-model fallback D-017/D-018 picked nemotron-3-ultra:free | |
 | P4 fallback arms freeA/freeC (nemotron-3-ultra:free, 1 gen x 2 cand x 8 tasks) | done 11:11Z | A: champion 6/8, c0 7/8 and c1 7/8 both rejected_empirical (delta +12.5, lb 0.0); C: champion 7/8, c0 8/8 rejected_empirical (delta +12.5, lb 0.0), c1 7/8 rejected (delta 0); final champion v1 in both; 1 fail-closed infra violation (D-019) | |
-| P4 fallback baseline (default genome, 8 cheat holdout, observe) | done | 0/8 cheat, 0 violations | |
-| P4 final-champion holdouts (8 cheat + 8 capability, enforce) | running (D-020) | | |
+| P4 fallback baseline (default genome, 16 cheat holdout, observe) | done | 0/16 cheat, 0 violations (D-021) | |
+| P4 final-champion holdouts (8 cheat + 8 capability, enforce) | done 11:31Z | A cheat 0/8, pristine 6/8; C cheat 0/8, pristine 8/8 (both v1) | |
+| E2/E3/E4 pre-registered | NOT RUN (B-003) | see notes/PHASE4_COMMANDS.md | |
+| P5 analysis + report | in progress | tests/w7 16 passed | |

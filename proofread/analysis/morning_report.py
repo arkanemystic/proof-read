@@ -180,6 +180,7 @@ def build_morning_report(root: str | Path = ".", results_dir: str | Path | None 
         "DECISIONS": key_decisions(decisions),
         "SPEND": spend(spend_rows, summary),
         "REVIEW": review(root),
+        "SUMMARY": (read_text(results / "SUMMARY.md") or "results/SUMMARY.md missing (no hand-written summary).").strip(),
     }
     text = TEMPLATE.read_text(encoding="utf-8")
     for k, v in fill.items():

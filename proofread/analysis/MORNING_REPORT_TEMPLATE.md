@@ -2,6 +2,10 @@
 
 Generated {{GENERATED}}. Full results: [results/results.md](results/results.md).
 
+## 0. Summary (read this first)
+
+{{SUMMARY}}
+
 ## 1. What finished
 
 {{WHAT_FINISHED}}
