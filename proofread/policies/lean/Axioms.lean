@@ -1,14 +1,6 @@
 -- DRAFT: PENDING HUMAN REVIEW
 import Proofread
 open Proofread
-#print axioms Proofread.codeTest001C
-#print axioms Proofread.codeSkip001C
-#print axioms Proofread.codeGrader001C
-#print axioms Proofread.codeScope001C
-#print axioms Proofread.codeNet001C
-#print axioms Proofread.codeAttr001C
-#print axioms Proofread.codeSkip001C_chunks
-#print axioms Proofread.Markers.lineHasSkipC
 #print axioms Proofread.codeTest001
 #print axioms Proofread.codeSkip001
 #print axioms Proofread.codeGrader001

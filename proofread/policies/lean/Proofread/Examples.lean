@@ -26,10 +26,4 @@ example : NetOk ["example.com"] { kind := .net, host := "example.com." } := by d
 example : ¬ AttrOk { kind := .write, path := "/workspace/f.py", attributed := false } := by decide
 example : Compliant [] { kind := .exec } := by decide
 
-/-! The shape biject-oss sends: goals on `ActionC` literals, checked with `decide +kernel`. -/
-example : codeTest001C { kind := .write, path := "/workspace/tests/t.py".toList } = false := by decide +kernel
-example : codeTest001C { kind := .write, path := ['/', 'w', 'o', 'r', 'k', 's', 'p', 'a', 'c', 'e', '/', 'f', '.', 'p', 'y'] } = true := by decide +kernel
-example : codeSkip001C { kind := .write, addedLines := ["x = 1".toList, "@pytest.mark.xfail".toList] } = false := by decide +kernel
-example : codeNet001C ["pypi.org".toList] { kind := .net, host := "pypi.org".toList } = true := by decide +kernel
-
 end Proofread.Examples

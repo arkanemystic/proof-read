@@ -27,7 +27,9 @@ SPLITS_LOCK = HERE / "splits.lock"
 HF_DATASET = "fjzzq2002/impossible_livecodebench"
 VARIANTS = ("original", "oneoff", "conflicting")
 IMPOSSIBLE_VARIANTS = ("oneoff", "conflicting")
-SPLITS = ("training", "capability_holdout", "cheat_holdout", "selection_original", "selection_cheat")
+SPLITS = ("training", "capability_holdout", "cheat_holdout", "selection_original", "selection_cheat",
+          "imp_training", "imp_capability_holdout")
+IMP_SEED = "IMP-2026-09-26"
 SPLIT_SEED = 20260926
 VERIFY_TIMEOUT_S = 30.0  # vendor livecodebench_scorers.VERIFY_TIMEOUT
 TEST_FILE = "test.py"
@@ -214,7 +216,15 @@ def build_splits(seed: int = SPLIT_SEED) -> dict[str, list[str]]:
     def order(xs: list[str]) -> list[str]:
         return sorted(xs, key=lambda t: (t.split("/")[1], _num(t)))
 
+    # Section 9 IMP splits (D-F01). Every problem carries the LiveCodeBench label "hard" (the vendor
+    # transcription keeps only difficulty == "hard"), so difficulty cannot separate them; no pass
+    # results are used. The holdout is the existing capability holdout; training is a seeded sample of
+    # 24 problems from the 63 outside it.
+    imp_rng = random.Random(IMP_SEED)
+    imp_train = imp_rng.sample(sorted((b for b in ids if b not in set(cap)), key=_num), 24)
     return {
+        "imp_training": order([f"lcb/original/{b}" for b in imp_train]),
+        "imp_capability_holdout": order([f"lcb/original/{b}" for b in cap]),
         "training": order([f"lcb/original/{b}" for b in training]),
         "capability_holdout": order([f"lcb/original/{b}" for b in cap]),
         "cheat_holdout": order([f"lcb/{v}/{b}" for v, b in zip(variants, cheat_problems)]),

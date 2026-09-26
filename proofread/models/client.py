@@ -2,7 +2,7 @@
 
 make_client(role, model) picks the provider and key for the role (see config.provider_for). Every
 call checks the SpendLedger caps first and records its cost afterwards. Keys are loaded from
-/home/dev/work/proofread/.env with python-dotenv without exporting anything to os.environ, and are
+.env with python-dotenv without exporting anything to os.environ, and are
 never logged.
 """
 
@@ -213,7 +213,9 @@ class OpenRouterClient(_BaseClient):
         if not hasattr(self, "_effort"):  # fixed per client, so one episode never mixes efforts
             self._effort = config.reasoning_effort(self.role, self.slug)
         effort = self._effort
-        if effort:
+        if effort == "none":  # reasoning off (section 9 IMP inner agent, D-F15)
+            body["reasoning"] = {"enabled": False}
+        elif effort:
             body["reasoning"] = {"effort": effort}
         if os.environ.get("PROOFREAD_TEMPERATURE"):
             body["temperature"] = float(os.environ["PROOFREAD_TEMPERATURE"])
@@ -254,7 +256,8 @@ class OpenRouterClient(_BaseClient):
                              model=self.model, stop_reason=str(choice.get("finish_reason") or ""))
         raw = {k: v for k, v in msg.items() if k in ("role", "content", "tool_calls", "reasoning", "reasoning_details")}
         raw["role"] = "assistant"
-        raw.setdefault("content", "")
+        if raw.get("content") is None:  # some providers (qwen via Alibaba) reject a null content on replay
+            raw["content"] = ""
         self._raw[_assistant_key(ChatMessage(role="assistant", content=text, tool_calls=calls))] = raw
         return self._account(resp, budget_key)
 

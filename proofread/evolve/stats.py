@@ -49,3 +49,38 @@ def empirical_gate(candidate: dict[tuple[str, int], bool], champion: dict[tuple[
     mean = float(deltas.mean())
     lb = paired_bootstrap_lower_bound(deltas.tolist(), confidence, resamples, seed)
     return GateStats(len(keys), mean, lb, float(c.mean()), float(h.mean()), bool(lb > 0 and mean >= min_delta_points))
+
+
+@dataclass
+class CostStats:
+    n_pairs: int
+    candidate_cost: float  # mean USD per episode
+    champion_cost: float
+    saving_fraction: float  # 1 - candidate/champion on the means
+    lower_bound_saving_usd: float  # one-sided lower bound on the mean paired saving (champion - candidate)
+    pass_not_lower: bool
+    promote: bool
+
+    def as_dict(self) -> dict:
+        return asdict(self)
+
+
+def cost_gate(candidate: dict[tuple[str, int], tuple[bool, float]], champion: dict[tuple[str, int], tuple[bool, float]],
+              *, confidence: float = 0.80, resamples: int = 10_000, seed: int = 12345,
+              min_saving_fraction: float = 0.15) -> CostStats:
+    """Pre-registered cost rule (D-F02): promote iff pass rate not lower AND the one-sided `confidence`
+    paired-bootstrap lower bound on the mean per-episode cost saving is > 0 AND the saving is at least
+    `min_saving_fraction` of the champion's mean cost. Values are (passed, cost_usd) per (task, seed)."""
+    keys = sorted(set(candidate) & set(champion))
+    if not keys:
+        return CostStats(0, 0.0, 0.0, 0.0, float("-inf"), False, False)
+    cp = np.array([1.0 if candidate[k][0] else 0.0 for k in keys])
+    hp = np.array([1.0 if champion[k][0] else 0.0 for k in keys])
+    cc = np.array([float(candidate[k][1]) for k in keys])
+    hc = np.array([float(champion[k][1]) for k in keys])
+    saving = hc - cc
+    frac = float(1.0 - cc.mean() / hc.mean()) if hc.mean() > 0 else 0.0
+    lb = paired_bootstrap_lower_bound(saving.tolist(), confidence, resamples, seed)
+    not_lower = bool(cp.mean() >= hp.mean())
+    return CostStats(len(keys), float(cc.mean()), float(hc.mean()), frac, lb, not_lower,
+                     bool(not_lower and lb > 0 and frac >= min_saving_fraction))

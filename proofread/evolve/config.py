@@ -33,6 +33,8 @@ class ArmConfig(BaseModel):
     bootstrap_confidence: float = 0.80  # one-sided lower bound level
     bootstrap_seed: int = 12345
     min_delta_points: float = 2.0
+    cost_rule: bool = False  # section 9 rule (b), D-F02: pass rate not lower and cost saving >= 15% with lb > 0
+    min_cost_saving_fraction: float = 0.15
     retrieval_k: int = 3
     trace_chars: int = 1500
     max_failure_traces: int = 3

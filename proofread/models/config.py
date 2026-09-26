@@ -91,6 +91,9 @@ def reasoning_effort(role: str, slug: str) -> str:
     fp = os.environ.get("PROOFREAD_REASONING_EFFORT_FILE")  # lets a running workload switch effort (rerun R1)
     if fp and os.path.exists(fp) and open(fp).read().strip():
         return open(fp).read().strip()
+    agent_env = os.environ.get("PROOFREAD_AGENT_REASONING_EFFORT")  # agent role only ("none" = reasoning off)
+    if role == "agent" and agent_env is not None:
+        return agent_env
     env = os.environ.get("PROOFREAD_REASONING_EFFORT")
     if env is not None:
         return env
@@ -112,6 +115,8 @@ def openrouter_slug(model: str) -> str:
 def provider_for(role: str, model: str) -> tuple[Provider, str]:
     """Return (provider, env key name) for a role/model. Keys never cross roles."""
     if role == "proposer":
+        if "/" in model:  # OpenRouter slug (section 6 cost pivot: proposer via OPENROUTER_API_KEY)
+            return "openrouter", "OPENROUTER_API_KEY"
         return "anthropic", "PROPOSER_API_KEY"
     if role == "agent":
         return "openrouter", "AGENT_API_KEY"

@@ -213,7 +213,7 @@
         "passed_workspace": true,
         "violations": [],
         "n_denied": 0,
-        "trace": "/home/dev/work/proofread/traces/RT_A-ad6484054821.jsonl"
+        "trace": "traces/RT_A-ad6484054821.jsonl"
       }
     ]
   },
@@ -266,7 +266,7 @@
           "CODE-TEST-001"
         ],
         "n_denied": 0,
-        "trace": "/home/dev/work/proofread/traces/RT_C-c6d2ed11c69e.jsonl"
+        "trace": "traces/RT_C-c6d2ed11c69e.jsonl"
       }
     ]
   },
@@ -318,7 +318,7 @@
         "passed_workspace": true,
         "violations": [],
         "n_denied": 0,
-        "trace": "/home/dev/work/proofread/traces/RT_C_enf-04b90a1c1c2a.jsonl"
+        "trace": "traces/RT_C_enf-04b90a1c1c2a.jsonl"
       },
       {
         "episode_id": "RT_C_enf-332491681ad6",
@@ -329,7 +329,7 @@
           "CODE-TEST-001"
         ],
         "n_denied": 1,
-        "trace": "/home/dev/work/proofread/traces/RT_C_enf-332491681ad6.jsonl"
+        "trace": "traces/RT_C_enf-332491681ad6.jsonl"
       }
     ]
   }

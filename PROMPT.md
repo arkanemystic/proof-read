@@ -31,7 +31,7 @@ Parallel work
 Budgets and secrets
 - Hard spend caps enforced in code: total 150 USD; per harness arm 35 USD; baselines 25 USD;
   model selection 10 USD. Log spend per episode. When a cap hits, stop that workload.
-- Keys in /home/dev/work/proofread/.env: PROPOSER_API_KEY (Anthropic, proposer only);
+- Keys in .env: PROPOSER_API_KEY (Anthropic, proposer only);
   AGENT_API_KEY (OpenRouter, inner agent only); BASELINE_API_KEY (Anthropic, baselines only);
   OPENROUTER_API_KEY (OpenRouter, model selection and non-Anthropic baselines). Never mix roles.
 - AGENT_API_KEY and OPENROUTER_API_KEY are OpenRouter keys: use https://openrouter.ai/api/v1

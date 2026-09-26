@@ -12,6 +12,7 @@ dependencies = [
   "datasets>=2.19",
   "matplotlib>=3.8",
   "cryptography>=42",
+  "pymongo>=4.18.2",
 ]
 
 [project.scripts]

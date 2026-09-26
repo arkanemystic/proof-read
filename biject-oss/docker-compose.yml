@@ -1,0 +1,41 @@
+# Proofread's local biject-api: backend on 127.0.0.1:18002 (BijectVerifier's default URL), the
+# lean-worker on the internal network only. Run from the repo root:
+#   docker compose -f biject-oss/docker-compose.yml --env-file biject-local/.env up -d --build
+# biject-local/.env (gitignored) may set BIJECT_API_KEYS; BijectVerifier reads the same file.
+name: proofread-biject-oss
+
+services:
+  backend:
+    build: ./backend
+    environment:
+      - LEAN_WORKER_URL=http://lean-worker:9000
+      - AUDIT_LOG_PATH=/app/policy_data/audit.log
+      - BIJECT_API_KEYS=${BIJECT_API_KEYS:-}
+    volumes:
+      - policy_data:/app/policy_data
+    depends_on:
+      lean-worker:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:18002:8000"
+    restart: unless-stopped
+
+  lean-worker:
+    build:
+      context: ./lean-worker
+      additional_contexts:
+        policies: ../proofread/policies/lean
+    environment:
+      - LEAN_MAX_PROCS=${LEAN_MAX_PROCS:-4}
+    expose:
+      - "9000"
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import json, urllib.request; assert json.load(urllib.request.urlopen('http://localhost:9000/health'))['status'] == 'ok'"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 30s
+    restart: unless-stopped
+
+volumes:
+  policy_data:

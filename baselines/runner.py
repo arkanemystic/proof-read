@@ -333,10 +333,10 @@ def make_real_runner() -> EpisodeRunner:
 
 
 def make_real_store(path: str = DEFAULT_STORE_PATH) -> Store:
-    from proofread.store.sqlite_store import SqliteStore
+    from proofread.store.factory import make_store  # SQLite unless MONGODB_URI is set
 
     Path(path).parent.mkdir(parents=True, exist_ok=True)
-    return SqliteStore(path)
+    return make_store(path)
 
 
 def make_stub_parts():

@@ -1,0 +1,20 @@
+[
+  {
+    "run": "IMP_C",
+    "champion": "IMP_C:v2",
+    "version": 2,
+    "genome": "results/final/champion_IMP_C.json",
+    "is_default": false,
+    "capability_arm": "IMPH_C",
+    "cheat_arm": "IMPH_C_cheat"
+  },
+  {
+    "run": "IMP_A",
+    "champion": "IMP_A:v1",
+    "version": 1,
+    "genome": "results/final/champion_IMP_A.json",
+    "is_default": true,
+    "capability_arm": "IMPH_default",
+    "cheat_arm": "IMPH_default_cheat"
+  }
+]

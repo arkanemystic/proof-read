@@ -30,7 +30,8 @@ from proofread.evolve.config import ArmConfig, arm_preset
 from proofread.evolve.gates import decide, screening_reject
 from proofread.evolve.patching import PatchError, validate_edit
 from proofread.evolve.proposer import Proposer
-from proofread.store.vector import NumpyVectorIndex, embed
+from proofread.store.factory import make_vector_index
+from proofread.store.vector import embed
 
 
 class DeadlineReached(RuntimeError):
@@ -50,7 +51,7 @@ class ArmRun:
         self.deadline_ts = deadline_ts
         self.rid = cfg.rid
         self.sem = asyncio.Semaphore(max(1, cfg.concurrency))
-        self.index = NumpyVectorIndex(store, namespace=f"rejected:{self.rid}")
+        self.index = make_vector_index(store, namespace=f"rejected:{self.rid}")  # numpy, or Atlas for a MongoStore
         self.proposer = Proposer(proposer_client, self.index, budget_key=cfg.budget_key, retrieval=cfg.retrieval,
                                  k=cfg.retrieval_k, max_tokens=cfg.proposer_max_tokens,
                                  temperature=cfg.proposer_temperature, trace_chars=cfg.trace_chars,
@@ -240,7 +241,8 @@ class ArmRun:
         out = {"edit_id": edit_id, **dec.as_dict()}
         edit.update(screening=scr, delta_points=dec.stats.delta_points, lb_points=dec.stats.lower_bound_points,
                     candidate_rate=dec.stats.candidate_rate, champion_rate=dec.stats.champion_rate,
-                    n_pairs=dec.stats.n_pairs, violations=dec.violations,
+                    n_pairs=dec.stats.n_pairs, violations=dec.violations, gate_rule=dec.rule,
+                    cost_stats=dec.cost.as_dict() if dec.cost else None,
                     n_violating_episodes=len(dec.violations), counterfactual_delta_points=dec.stats.delta_points,
                     gate_reason=dec.reason)
         if dec.status == "passed_gates":
@@ -268,10 +270,11 @@ class ArmRun:
 
         sel = self.done(self._ev(f"g{gen}", "selection"))
         if sel is None:
-            passed = [(d["stats"]["delta_points"], -i, d["edit_id"]) for i, d in enumerate(decisions)
+            passed = [(d["stats"]["delta_points"], ((d.get("cost") or {}).get("saving_fraction") or 0.0), -i, d["edit_id"])
+                      for i, d in enumerate(decisions)
                       if d["status"] == "passed_gates"]
-            winner = max(passed)[2] if passed else None
-            sel = {"generation": gen, "promoted": winner, "passed": [p[2] for p in passed]}
+            winner = max(passed)[3] if passed else None
+            sel = {"generation": gen, "promoted": winner, "passed": [p[3] for p in passed]}
             self.emit("gen.selection", self._ev(f"g{gen}", "selection"), sel)
         winner = sel["promoted"]
         new_vid = champion_vid
@@ -283,7 +286,8 @@ class ArmRun:
                 new_vid = self._put_version(g, gen, e["id"], champion_vid,
                                             {"delta_points": d["stats"]["delta_points"],
                                              "lb_points": d["stats"]["lower_bound_points"],
-                                             "candidate_rate": d["stats"]["candidate_rate"]})
+                                             "candidate_rate": d["stats"]["candidate_rate"],
+                                             "rule": d.get("rule", ""), "cost": d.get("cost")})
                 e.update(status="promoted", promoted_version=new_vid, decided_at=time.time())
                 self.store.put("edits", e["id"], e)
                 self.emit("edit.promoted", self._ev(e["id"], "promoted"), {"edit_id": e["id"], "version": new_vid})
@@ -399,15 +403,18 @@ def _parse_deadline(s: str | None) -> float | None:
 
 
 async def _amain(args: argparse.Namespace) -> dict[str, Any]:
-    from proofread.store.sqlite_store import SqliteEventLog, SqliteStore
+    from proofread.store.factory import make_eventlog, make_store  # SQLite unless MONGODB_URI is set
 
-    store, log = SqliteStore(args.db), SqliteEventLog(args.db)
+    store, log = make_store(args.db), make_eventlog(args.db)
     cfg = arm_preset(args.arm, generations=args.generations, candidates_per_generation=args.candidates,
                      agent_model=args.model, max_tasks=args.tasks, concurrency=args.concurrency,
                      seeds=[int(x) for x in args.seeds.split(",")], split=args.split,
                      run_id=args.run_id, proposer_model=args.proposer_model)
+    if args.cost_rule:
+        cfg = cfg.model_copy(update={"cost_rule": True})
+    init = Genome.model_validate_json(open(args.genome).read()) if args.genome else None
     runner, proposer = build_real_components(args, store)
-    return await run_arm(cfg, runner, proposer, store, log, real_task_loader, _parse_deadline(args.deadline))
+    return await run_arm(cfg, runner, proposer, store, log, real_task_loader, _parse_deadline(args.deadline), init)
 
 
 def main(argv: list[str] | None = None) -> None:
@@ -425,6 +432,8 @@ def main(argv: list[str] | None = None) -> None:
     ap.add_argument("--run-id", default="")
     ap.add_argument("--trace-dir", default="traces")
     ap.add_argument("--deadline", default=None, help="ISO UTC time; no new episodes start after it")
+    ap.add_argument("--genome", default="", help="initial champion genome JSON (default: Genome())")
+    ap.add_argument("--cost-rule", action="store_true", help="enable promotion rule (b), D-F02")
     args = ap.parse_args(argv)
     print(json.dumps(asyncio.run(_amain(args)), indent=1))
 

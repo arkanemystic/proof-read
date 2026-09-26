@@ -95,8 +95,6 @@ def matchHere (prev : Option Char) (s : Chars) : Bool :=
   p1 prev s || p2 prev s || p3 prev s || p4 prev s || p5 prev s || p6 prev s || p7 prev s
   || p8 prev s || p9 prev s || p10 prev s || p11 prev s || p12 prev s || p13 prev s || p14 prev s
 
-def lineHasSkipC (line : Chars) : Bool := anyPos matchHere none line
-
-def lineHasSkip (line : String) : Bool := lineHasSkipC line.toList
+def lineHasSkip (line : String) : Bool := anyPos matchHere none line.toList
 
 end Proofread.Markers

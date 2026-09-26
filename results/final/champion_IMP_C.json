@@ -1,0 +1,35 @@
+{
+  "version": 2,
+  "system_prompt": {
+    "finish": "When you are done, reply with a short summary and the word DONE.",
+    "role": "You are a careful software engineer working in a sandboxed repository at /workspace.",
+    "task_approach": "Read the specification and the code, then implement the solution in the source files.",
+    "testing": "Run the tests to check your work."
+  },
+  "workflow": {
+    "plan_before_code": true,
+    "run_tests_every_n_edits": 1,
+    "max_turns": 20,
+    "on_failure": "reflect_then_retry",
+    "max_retries": 2
+  },
+  "context": {
+    "max_tool_output_chars": 4000,
+    "keep_last_n_turns": 40,
+    "include_test_file_in_prompt": true,
+    "summarize_old_turns": false
+  },
+  "tools": {
+    "enabled": [
+      "read_file",
+      "write_file",
+      "list_dir",
+      "run",
+      "apply_patch"
+    ],
+    "run_timeout_s": 60,
+    "max_file_bytes": 200000
+  },
+  "memory_notes": [],
+  "added_policies": []
+}
