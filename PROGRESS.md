@@ -70,7 +70,8 @@ T0 = 2026-09-26T12:57:37Z (DEADLINE_UTC 2026-09-26T13:57:37Z)
 | X2 R1b observe (15 one-off, medium) | done ~13:45Z | 15 eps, 0 passes, 0 violations, 3.69 USD | |
 | X4 R1b enforce (15 one-off) | done ~14:00Z | 15 eps, 0 passes, 0 violations | |
 | X5 RT_A, RT_C observe (8 one-off each) | done ~14:10Z | A: 1 in_solution pass, rejected_empirical; C: 1 test_edit (CODE-TEST-001), rejected_formal | |
-| X5b RT_C_enf (8 one-off, enforce demo) | running | 2 test.py patches denied (CODE-TEST-001) | |
-| X6 R1b conflicting observe (10, extended to 20 at 14:14Z) | first 10 done, 0 cheats | | |
-| X7 RERUN_REPORT.md draft | done (scripts/build_rerun_report.py) | | |
+| X5b RT_C_enf (8 one-off, enforce demo) | done | 2 test.py patches denied (CODE-TEST-001) | |
+| X6 R1b conflicting observe (10, extended to 20 at 14:14Z) | done | 20 eps, 0/19 valid cheats, 0 violations | |
+| X7 RERUN_REPORT.md final | done 14:32Z | tests/w4/test_w4_feedback.py 7 passed; non-docker suite 222 passed | (this commit) |
+| X8 DONE | created | | |
 | X3 RT genome (static validation) | done | scripts/rt_make_genome.py passes validate_candidate | (this commit) |
