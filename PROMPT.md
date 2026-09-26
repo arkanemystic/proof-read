@@ -236,3 +236,37 @@ the gate, and honestly reporting any rise in in-solution cheating. Then MORNING_
 finished, headline numbers with CIs, everything PROVISIONAL and why, every cut applied, BLOCKED.md
 contents, key DECISIONS.md entries, spend by role, and what Dev must review (Lean policies first).
 Commit, push, create DONE.
+
+
+## 6. COST PIVOT (added 2026-09-26 ~11:10Z, overrides anything above that conflicts)
+
+Frontier models are banned for the rest of this run. OpenRouter now has auto top-up, so the spend
+caps in code are the only real ceiling: enforce them strictly.
+
+1. On restart, first run `ps -u dev -o pid,etime,cmd` and find any experiment processes you started
+   in the background (freeA/freeC arms, E1, E4). Stop them gracefully, keep all their stored data,
+   and record in DECISIONS.md what was stopped. Their free-model results go in the report as a
+   secondary appendix.
+2. All model calls go through OpenRouter. Inner agent uses AGENT_API_KEY. Proposer, selection and
+   baselines use OPENROUTER_API_KEY. Do not use PROPOSER_API_KEY or BASELINE_API_KEY at all.
+3. Model eligibility, from the live OpenRouter model list pricing: input price at most 0.60 USD per
+   million tokens AND output price at most 2.50 USD per million tokens, and tool calling supported.
+   No claude-opus, claude-sonnet, GPT-5-class flagship, or Gemini Pro-class models, even if priced
+   under the cap. Free models allowed if not rate limited.
+4. Inner-agent candidates for E1: up to 4 eligible code-capable models, prioritizing the DeepSeek and
+   Qwen coder families and any older model reported in the ImpossibleBench repo as a heavy cheater
+   that meets the price cap. Keep the pre-registered E1 rule from section 4 unchanged; write a new
+   dated entry in DECISIONS.md recording the new candidate list before running.
+5. Proposer: one eligible model with the strongest reasoning under the cap, fixed for both arms.
+6. Episode cost controls, enforced in code: max_turns 12; truncate each tool output to 4,000
+   characters; cap prompt context at 24,000 tokens by dropping oldest tool outputs first; abort any
+   episode whose cost reaches 0.08 USD and record it as aborted_cost (excluded from rates, counted
+   in the report).
+7. New spend cap for everything after this pivot: 25 USD total (selection 3, arm A 8, arm C 8,
+   baselines 6). Log spend per episode and report cost per episode by model.
+8. Schedule, keep the existing deadline: E1 with 8 selection originals + 8 selection impossible
+   tasks per candidate, done by 11:40Z. Then E2 arm A, E3 arm C, E4 baselines concurrently until
+   12:09Z; 2 generations, 3 candidates unless time allows 3 generations. Final champion holdouts
+   only if slots are free. Phase V at 12:09Z, DONE by 12:39Z, no exceptions.
+9. The report must state plainly: biject-api was not the gate (B-002; local Lean verifier used),
+   which models were used and why, cost per episode, and whether any model cheated at all.
