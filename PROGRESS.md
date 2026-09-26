@@ -49,3 +49,5 @@ T0 = 2026-09-26T12:57:37Z (DEADLINE_UTC 2026-09-26T13:57:37Z)
 
 | Item | Status | Tests | Commit |
 |---|---|---|---|
+| RS setup (probe, controls, env) | done | tests/w4/test_w4_rerun_controls.py 3 passed; w4+baselines 91 passed | 9d44ad4 |
+| R1 observe (medium, 20 one-off) | running/finishing | see results/rerun/summary.json | |
