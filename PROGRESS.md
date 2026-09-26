@@ -17,3 +17,6 @@ T0 = 2026-09-26T08:19:28Z  (DEADLINE_UTC 2026-09-26T12:49:15Z; T0+4:20 fits, no 
 |---|---|---|---|
 | P1 contracts | done | 6 passed (make test) | (this commit) |
 | P2 launch W1..W7 | launched 08:23Z in one message | | |
+| W2 benchmarks+graders | done | tests/w2 32 passed 1 skipped (docker e2e pending W1) | 0fc2863 |
+| W6 baselines+selection | done | baselines/tests 25 passed offline (+1 network) | a683dd5 |
+| W7 analysis | done | tests/w7 14 passed | e8abd5f |
