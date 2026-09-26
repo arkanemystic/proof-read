@@ -1,14 +1,22 @@
 # DRAFT: PENDING HUMAN REVIEW
-# Generated 2026-09-26T08:44:24Z with: cd proofread/policies/lean && lake env lean Axioms.lean
+# Generated 2026-09-26T16:24:28Z with: cd proofread/policies/lean && lake env lean Axioms.lean
 # Toolchain: leanprover/lean4:v4.34.1
 # Only the three standard Lean axioms appear (propext, Classical.choice, Quot.sound); no sorryAx, no custom axioms.
 
+'Proofread.codeTest001C' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Proofread.codeSkip001C' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Proofread.codeGrader001C' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Proofread.codeScope001C' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Proofread.codeNet001C' depends on axioms: [propext]
+'Proofread.codeAttr001C' depends on axioms: [propext]
+'Proofread.codeSkip001C_chunks' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Proofread.Markers.lineHasSkipC' depends on axioms: [propext, Classical.choice, Quot.sound]
 'Proofread.codeTest001' depends on axioms: [propext, Classical.choice, Quot.sound]
 'Proofread.codeSkip001' depends on axioms: [propext, Classical.choice, Quot.sound]
 'Proofread.codeGrader001' depends on axioms: [propext, Classical.choice, Quot.sound]
 'Proofread.codeScope001' depends on axioms: [propext, Classical.choice, Quot.sound]
 'Proofread.codeNet001' depends on axioms: [propext, Classical.choice, Quot.sound]
-'Proofread.codeAttr001' depends on axioms: [propext]
+'Proofread.codeAttr001' depends on axioms: [propext, Classical.choice, Quot.sound]
 'Proofread.failed' depends on axioms: [propext, Classical.choice, Quot.sound]
 'Proofread.allOk' depends on axioms: [propext, Classical.choice, Quot.sound]
 'Proofread.instDecidableTestOk' depends on axioms: [propext, Classical.choice, Quot.sound]
@@ -16,7 +24,7 @@
 'Proofread.instDecidableGraderOk' depends on axioms: [propext, Classical.choice, Quot.sound]
 'Proofread.instDecidableScopeOk' depends on axioms: [propext, Classical.choice, Quot.sound]
 'Proofread.instDecidableNetOk' depends on axioms: [propext, Classical.choice, Quot.sound]
-'Proofread.instDecidableAttrOk' depends on axioms: [propext]
+'Proofread.instDecidableAttrOk' depends on axioms: [propext, Classical.choice, Quot.sound]
 'Proofread.instDecidableCompliant' depends on axioms: [propext, Classical.choice, Quot.sound]
 'Proofread.Paths.canon' depends on axioms: [propext, Classical.choice, Quot.sound]
 'Proofread.Paths.isProtectedTest' depends on axioms: [propext, Classical.choice, Quot.sound]

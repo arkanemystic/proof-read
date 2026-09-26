@@ -21,40 +21,56 @@ def Kind.isSkip : Kind → Bool
   | .write | .rename => true
   | _ => false
 
+/-! Policies on `ActionC` (strings as `List Char`). -/
+
+namespace ActionC
+
 /-- Canonical targets: path and dst when non-empty. -/
-def Action.targets (a : Action) : List Chars :=
-  ([a.path.toList, a.dst.toList].filter (· != [])).map canon
+def targets (a : ActionC) : List Chars := ([a.path, a.dst].filter (· != [])).map canon
+
+end ActionC
 
 /-- CODE-TEST-001 -/
-def codeTest001 (a : Action) : Bool :=
-  !(a.kind.isMutating && a.targets.any (isProtectedTest (a.protectedExtra.map String.toList)))
+def codeTest001C (a : ActionC) : Bool :=
+  !(a.kind.isMutating && a.targets.any (isProtectedTest a.protectedExtra))
 
 /-- CODE-SKIP-001 -/
-def codeSkip001 (a : Action) : Bool :=
-  !(a.kind.isSkip && (a.addedLines.any lineHasSkip || a.addedLinesNfkc.any lineHasSkip))
+def codeSkip001C (a : ActionC) : Bool :=
+  !(a.kind.isSkip && (a.addedLines.any lineHasSkipC || a.addedLinesNfkc.any lineHasSkipC))
 
 /-- CODE-GRADER-001 -/
-def codeGrader001 (a : Action) : Bool :=
-  !(a.kind.isMutating && a.targets.any (fun p => isGraderPath p a.section_.toList))
+def codeGrader001C (a : ActionC) : Bool :=
+  !(a.kind.isMutating && a.targets.any (fun p => isGraderPath p a.section_))
 
 /-- CODE-SCOPE-001 (a scoped kind with no location fails closed). -/
-def codeScope001 (a : Action) : Bool :=
+def codeScope001C (a : ActionC) : Bool :=
   !(a.kind.isScope &&
     (a.targets.isEmpty || a.kind == .attemptOutside || a.targets.any (fun p => !inScope p)))
 
 /-- Host normal form: strip whitespace, drop trailing dots (lowercasing is done by the bridge). -/
-def normHost (h : String) : Chars := (dropWhileEq '.' (strip h.toList).reverse).reverse
+def normHostC (h : Chars) : Chars := (dropWhileEq '.' (strip h).reverse).reverse
 
 /-- CODE-NET-001 -/
-def codeNet001 (allow : List String) (a : Action) : Bool :=
+def codeNet001C (allow : List Chars) (a : ActionC) : Bool :=
   match a.kind with
   | .net =>
-    let h := normHost a.host
-    h != [] && (allow.map normHost).contains h
+    let h := normHostC a.host
+    h != [] && (allow.map normHostC).contains h
   | _ => true
 
 /-- CODE-ATTR-001 -/
-def codeAttr001 (a : Action) : Bool := !(!a.attributed && a.kind.isScope)
+def codeAttr001C (a : ActionC) : Bool := !(!a.attributed && a.kind.isScope)
+
+/-! The same policies on `Action`, by definition `policyC ∘ Action.toC`. -/
+
+def normHost (h : String) : Chars := normHostC h.toList
+
+def codeTest001 (a : Action) : Bool := codeTest001C a.toC
+def codeSkip001 (a : Action) : Bool := codeSkip001C a.toC
+def codeGrader001 (a : Action) : Bool := codeGrader001C a.toC
+def codeScope001 (a : Action) : Bool := codeScope001C a.toC
+def codeNet001 (allow : List String) (a : Action) : Bool := codeNet001C (allow.map String.toList) a.toC
+def codeAttr001 (a : Action) : Bool := codeAttr001C a.toC
 
 /-- Failed policy ids. -/
 def failed (allow : List String) (a : Action) : List String :=
@@ -65,6 +81,30 @@ def failed (allow : List String) (a : Action) : List String :=
   (checks.filter (fun c => !c.2)).map Prod.fst
 
 def allOk (allow : List String) (a : Action) : Bool := (failed allow a).isEmpty
+
+/-- CODE-SKIP-001 depends on the added lines only through the set of lines (raw and NFKC together).
+So it equals the conjunction of the policy over any list of chunks that covers exactly that set.
+biject-oss relies on this to split a large write into several kernel conjectures. -/
+theorem codeSkip001C_chunks (a : ActionC) (cs : List (List Chars))
+    (hcov : ∀ x, x ∈ a.addedLines ++ a.addedLinesNfkc ↔ ∃ c ∈ cs, x ∈ c) :
+    codeSkip001C a = cs.all (fun c => codeSkip001C { kind := a.kind, addedLines := c }) := by
+  simp only [codeSkip001C]
+  cases hk : a.kind.isSkip
+  · simp
+  · apply Bool.eq_iff_iff.mpr
+    simp only [Bool.true_and, Bool.not_or, Bool.and_eq_true, Bool.not_eq_true', List.any_eq_false,
+      List.all_eq_true, List.any_nil, Bool.or_false]
+    constructor
+    · rintro ⟨h1, h2⟩ c hc x hx
+      rcases List.mem_append.mp ((hcov x).mpr ⟨c, hc, hx⟩) with h | h
+      · exact h1 x h
+      · exact h2 x h
+    · intro h
+      refine ⟨fun x hx => ?_, fun x hx => ?_⟩
+      · obtain ⟨c, hc, hxc⟩ := (hcov x).mp (List.mem_append_left _ hx)
+        exact h c hc x hxc
+      · obtain ⟨c, hc, hxc⟩ := (hcov x).mp (List.mem_append_right _ hx)
+        exact h c hc x hxc
 
 /-! Prop wrappers with Decidable instances. -/
 
