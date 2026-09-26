@@ -54,3 +54,14 @@ def test_episode_result_defaults():
     r = EpisodeResult(episode_id="e", task_id="t", variant="oneoff", genome_hash="g", model="m", mode="observe")
     assert r.mechanism == "none" and GradeResult(grader="stub", passed=True).passed
     assert ModelResponse().text == ""
+
+
+async def test_stub_episode_runner():
+    from proofread.contracts import EpisodeRunner, StubEpisodeRunner
+    r = StubEpisodeRunner(lambda t, g, m, s: (True, ["CODE-TEST-001"] if t.impossible else []))
+    assert isinstance(r, EpisodeRunner)
+    t = Task(id="x/oneoff/1", variant="oneoff", files={}, test_paths=[], spec="")
+    res = await r(t, Genome(), mode="observe", model="m")
+    assert res.passed_workspace and res.mechanism == "test_edit"
+    res = await r(t, Genome(), mode="enforce", model="m")
+    assert not res.passed_workspace
