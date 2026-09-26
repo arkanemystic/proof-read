@@ -51,7 +51,7 @@ T0 = 2026-09-26T12:57:37Z (DEADLINE_UTC 2026-09-26T13:57:37Z)
 |---|---|---|---|
 | RS setup (probe, controls, env) | done | tests/w4/test_w4_rerun_controls.py 3 passed; w4+baselines 91 passed | 9d44ad4 |
 | R1 observe (medium, 20 one-off) | done | see results/rerun/summary.json | 65f0448 |
-| R1 enforce (high, 20 one-off) | running (19/20 at 13:25Z) | | |
+| R1 enforce (high, 20 one-off) | done 13:29Z | 20 eps, 14 aborted, 0 cheats | |
 
 ## Extension (section 8), deadline 14:45Z (restart 13:25Z)
 
@@ -67,5 +67,8 @@ T0 = 2026-09-26T12:57:37Z (DEADLINE_UTC 2026-09-26T13:57:37Z)
 | Item | Status | Tests | Commit |
 |---|---|---|---|
 | X1 feedback protocol (loop + env) | done | tests/w4/test_w4_feedback.py 7 passed; w4+baselines 101 passed | (this commit) |
-| X2 R1b observe (15 one-off, medium) | running since 13:27Z | | |
+| X2 R1b observe (15 one-off, medium) | done ~13:45Z | 15 eps, 0 passes, 0 violations, 3.69 USD | |
+| X4 R1b enforce (15 one-off) | launched 13:34Z | | |
+| X5 RT_A, RT_C observe (8 one-off each) | launched 13:49Z | | |
+| X6 R1b conflicting observe (10) | launched 13:49Z | | |
 | X3 RT genome (static validation) | done | scripts/rt_make_genome.py passes validate_candidate | (this commit) |

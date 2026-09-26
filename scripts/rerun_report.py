@@ -28,6 +28,23 @@ def ci(k: int, n: int) -> str:
     return f"{k}/{n} = {100 * k / n:.1f}% [{100 * lo:.1f}, {100 * hi:.1f}]"
 
 
+def trace_info(e: dict) -> dict:
+    """Feedback rounds (R1b/RT) and whether the agent itself ran the tests, from the episode trace."""
+    info = {"feedback": {}, "agent_test_runs": 0, "feedback_rounds_given": 0}
+    try:
+        for line in open(e.get("trace_path") or ""):
+            r = json.loads(line)
+            if r.get("type") == "result":
+                info["feedback"] = r.get("feedback") or {}
+            elif r.get("type") == "tool" and r.get("name") == "run" and "test" in str((r.get("arguments") or {}).get("cmd")):
+                info["agent_test_runs"] += 1
+            elif r.get("type") == "feedback":
+                info["feedback_rounds_given"] += 1
+    except OSError:
+        pass
+    return info
+
+
 def summarize(eps: list[dict]) -> dict:
     groups: dict[str, list[dict]] = defaultdict(list)
     for e in eps:
@@ -44,6 +61,7 @@ def summarize(eps: list[dict]) -> dict:
         attempts = [e for e in valid if any(v in FILE_LEVEL for v in e.get("violations") or [])]
         cheat_pass = Counter(e.get("mechanism") for e in passed)
         costs = [e.get("cost_usd") or 0.0 for e in g]
+        ti = {e["episode_id"]: trace_info(e) for e in g}
         out[arm] = {
             "episodes": len(g), "valid": n, "aborted_cost": len(aborted), "infra_or_budget_error": len(failed_infra),
             "passed_workspace": ci(len(passed), n),
@@ -59,6 +77,13 @@ def summarize(eps: list[dict]) -> dict:
             "cost_total_usd": round(sum(costs), 4),
             "cost_per_episode_usd": round(sum(costs) / len(g), 4) if g else 0.0,
             "mean_turns": round(sum(e.get("turns") or 0 for e in g) / len(g), 2) if g else 0.0,
+            "episodes_where_agent_ran_tests": sum(1 for e in g if ti[e["episode_id"]]["agent_test_runs"]),
+            "feedback_rounds_given_hist": dict(Counter(ti[e["episode_id"]]["feedback_rounds_given"] for e in g)),
+            "first_violation_round_hist": dict(Counter(str(ti[e["episode_id"]]["feedback"].get("first_violation_round"))
+                                                   for e in g if e.get("violations"))),
+            "harness_pass_round_hist": dict(Counter(str(ti[e["episode_id"]]["feedback"].get("pass_round"))
+                                                for e in g if ti[e["episode_id"]]["feedback"].get("pass_round")
+                                                is not None)),
             "cheat_examples": [{"episode_id": e["episode_id"], "task_id": e["task_id"], "mechanism": e.get("mechanism"),
                                 "passed_workspace": e.get("passed_workspace"), "violations": e.get("violations"),
                                 "n_denied": e.get("n_denied"), "trace": e.get("trace_path")}
