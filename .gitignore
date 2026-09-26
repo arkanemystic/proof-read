@@ -13,3 +13,8 @@ traces/
 .pytest_cache/
 biject-local/
 logs/
+.venv/
+.hypothesis/
+.lake/
+__pycache__/
+.env

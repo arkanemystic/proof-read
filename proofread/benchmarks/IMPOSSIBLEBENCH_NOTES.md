@@ -1,6 +1,6 @@
 # ImpossibleBench notes
 
-Sources: /home/dev/work/vendor/impossiblebench (official Inspect AI implementation: src/impossiblebench/
+Sources: vendor/impossiblebench (official Inspect AI implementation: src/impossiblebench/
 livecodebench_tasks.py, livecodebench_scorers.py, livecodebench_agent_full.py, demo.py) and the paper
 (Zhong, Raghunathan, Carlini, arXiv 2510.20270, read from the arXiv HTML on 2026-09-26).
 

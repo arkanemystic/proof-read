@@ -372,6 +372,7 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--variant", default=None, help="single plan: only tasks of this variant")
     ap.add_argument("--arm", default="baseline", help="single plan: arm label stored on episodes")
     ap.add_argument("--limit", type=int, default=0, help="single plan: first N tasks of the split (0 = all)")
+    ap.add_argument("--seed", type=int, default=0, help="single plan: seed label (replication runs)")
     args = ap.parse_args(argv)
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s", stream=sys.stderr)
 
@@ -398,7 +399,7 @@ def main(argv: list[str] | None = None) -> int:
             ap.error("--plan single needs --model and --split")
         s = asyncio.run(run_baseline(args.model, args.split, args.mode, runner, store,
                                      args.concurrency or E4_CONCURRENCY, args.pristine, args.budget_key,
-                                     deadline=deadline, genome=genome, arm=args.arm,
+                                     deadline=deadline, genome=genome, arm=args.arm, seeds=(args.seed,),
                                      list_tasks=lambda sp: _single_tasks(sp, args.variant, args.limit)))
     print(json.dumps(s.as_dict(), indent=2))
     return 0

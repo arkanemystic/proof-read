@@ -1,0 +1,49 @@
+{
+ "per_store": {
+  "rerun": {
+   "episodes": 114,
+   "episodes_with_trace": 114,
+   "actions": 851,
+   "n_actions_field_sum": 811,
+   "mongo_count": 851
+  },
+  "proofread": {
+   "episodes": 175,
+   "episodes_with_trace": 175,
+   "actions": 736,
+   "n_actions_field_sum": 699,
+   "mongo_count": 736
+  },
+  "imp": {
+   "episodes": 88,
+   "episodes_with_trace": 88,
+   "actions": 397,
+   "n_actions_field_sum": 386,
+   "mongo_count": 397
+  },
+  "imp2": {
+   "episodes": 35,
+   "episodes_with_trace": 35,
+   "actions": 136,
+   "n_actions_field_sum": 128,
+   "mongo_count": 136
+  },
+  "smoke": {
+   "episodes": 29,
+   "episodes_with_trace": 29,
+   "actions": 230,
+   "n_actions_field_sum": 230,
+   "mongo_count": 230
+  },
+  "imp3": {
+   "episodes": 438,
+   "episodes_with_trace": 438,
+   "actions": 4454,
+   "n_actions_field_sum": 3892,
+   "mongo_count": 4454
+  }
+ },
+ "missing_traces": 0,
+ "total_actions": 6804,
+ "seconds": 55.2
+}

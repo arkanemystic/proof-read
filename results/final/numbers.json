@@ -1,6 +1,6 @@
 {
  "meta": {
-  "generated_utc": "2026-09-26T16:46:09Z",
+  "generated_utc": "2026-09-26T18:09:24Z",
   "sources": {
    "imp": "data/imp3.sqlite (docs: episodes, edits, harness_versions; events)",
    "rerun": "data/rerun.sqlite (episodes)",
@@ -12,7 +12,7 @@
    "trace": "traces/RT_C_enf-332491681ad6.jsonl"
   },
   "counts": {
-   "imp_episodes": 278,
+   "imp_episodes": 438,
    "imp_edits": 6,
    "imp_events": 31,
    "rerun_episodes": 114
@@ -208,6 +208,299 @@
    }
   },
   {
+   "id": "replication.default.s1.rate",
+   "label": "Replication seed 1: default genome, capability holdout pass rate (pristine, enforce)",
+   "value": "24/40 = 60.0%; 0.0041 USD per solved task; 0 errored",
+   "n": 40,
+   "ci": "95% Wilson [44.6%, 73.7%]",
+   "source": "data/imp3.sqlite (docs: episodes, edits, harness_versions; events)",
+   "raw": {
+    "harness": "default",
+    "seed": 1,
+    "arm": "IMPH_default_s1",
+    "k": 24,
+    "n": 40,
+    "rate": 0.6,
+    "lo": 0.445959,
+    "hi": 0.736517,
+    "total_usd": 0.099161,
+    "per_episode_usd": 0.002479,
+    "per_solved_usd": 0.004132,
+    "errors": 0,
+    "aborted": 0,
+    "valid": {
+     "k": 24,
+     "n": 40,
+     "rate": 0.6,
+     "lo": 0.445959,
+     "hi": 0.736517
+    },
+    "denied": 0,
+    "violating": 0
+   }
+  },
+  {
+   "id": "replication.C.s1.rate",
+   "label": "Replication seed 1: IMP-C champion, capability holdout pass rate (pristine, enforce)",
+   "value": "30/40 = 75.0%; 0.0057 USD per solved task; 0 errored",
+   "n": 40,
+   "ci": "95% Wilson [59.8%, 85.8%]",
+   "source": "data/imp3.sqlite (docs: episodes, edits, harness_versions; events)",
+   "raw": {
+    "harness": "C",
+    "seed": 1,
+    "arm": "IMPH_C_s1",
+    "k": 30,
+    "n": 40,
+    "rate": 0.75,
+    "lo": 0.59806,
+    "hi": 0.858129,
+    "total_usd": 0.171106,
+    "per_episode_usd": 0.004278,
+    "per_solved_usd": 0.005704,
+    "errors": 0,
+    "aborted": 0,
+    "valid": {
+     "k": 30,
+     "n": 40,
+     "rate": 0.75,
+     "lo": 0.59806,
+     "hi": 0.858129
+    },
+    "denied": 0,
+    "violating": 0
+   }
+  },
+  {
+   "id": "replication.default.s2.rate",
+   "label": "Replication seed 2: default genome, capability holdout pass rate (pristine, enforce)",
+   "value": "22/40 = 55.0%; 0.0055 USD per solved task; 1 errored",
+   "n": 40,
+   "ci": "95% Wilson [39.8%, 69.3%]",
+   "source": "data/imp3.sqlite (docs: episodes, edits, harness_versions; events)",
+   "raw": {
+    "harness": "default",
+    "seed": 2,
+    "arm": "IMPH_default_s2",
+    "k": 22,
+    "n": 40,
+    "rate": 0.55,
+    "lo": 0.398291,
+    "hi": 0.692947,
+    "total_usd": 0.121199,
+    "per_episode_usd": 0.00303,
+    "per_solved_usd": 0.005509,
+    "errors": 1,
+    "aborted": 0,
+    "valid": {
+     "k": 22,
+     "n": 39,
+     "rate": 0.564103,
+     "lo": 0.409757,
+     "hi": 0.706952
+    },
+    "denied": 0,
+    "violating": 1
+   }
+  },
+  {
+   "id": "replication.C.s2.rate",
+   "label": "Replication seed 2: IMP-C champion, capability holdout pass rate (pristine, enforce)",
+   "value": "28/40 = 70.0%; 0.0057 USD per solved task; 0 errored",
+   "n": 40,
+   "ci": "95% Wilson [54.6%, 81.9%]",
+   "source": "data/imp3.sqlite (docs: episodes, edits, harness_versions; events)",
+   "raw": {
+    "harness": "C",
+    "seed": 2,
+    "arm": "IMPH_C_s2",
+    "k": 28,
+    "n": 40,
+    "rate": 0.7,
+    "lo": 0.5457,
+    "hi": 0.819252,
+    "total_usd": 0.160209,
+    "per_episode_usd": 0.004005,
+    "per_solved_usd": 0.005722,
+    "errors": 0,
+    "aborted": 0,
+    "valid": {
+     "k": 28,
+     "n": 40,
+     "rate": 0.7,
+     "lo": 0.5457,
+     "hi": 0.819252
+    },
+    "denied": 0,
+    "violating": 0
+   }
+  },
+  {
+   "id": "replication.default.pooled",
+   "label": "Pooled seeds [0, 1, 2]: default genome, pass rate over valid episodes (40 tasks)",
+   "value": "70/119 = 58.8%; 0.0052 USD per solved task",
+   "n": 119,
+   "ci": "95% Wilson [49.8%, 67.3%]",
+   "source": "data/imp3.sqlite (docs: episodes, edits, harness_versions; events)",
+   "raw": {
+    "episodes": 119,
+    "seeds": [
+     0,
+     1,
+     2
+    ],
+    "tasks": 40,
+    "k": 70,
+    "n": 119,
+    "rate": 0.588235,
+    "lo": 0.498401,
+    "hi": 0.672551,
+    "total_usd": 0.364472,
+    "per_episode_usd": 0.003063,
+    "per_solved_usd": 0.005207,
+    "mean_task_pass": 0.591667
+   }
+  },
+  {
+   "id": "replication.C.pooled",
+   "label": "Pooled seeds [0, 1, 2]: IMP-C champion, pass rate over valid episodes (40 tasks)",
+   "value": "85/119 = 71.4%; 0.0055 USD per solved task",
+   "n": 119,
+   "ci": "95% Wilson [62.7%, 78.8%]",
+   "source": "data/imp3.sqlite (docs: episodes, edits, harness_versions; events)",
+   "raw": {
+    "episodes": 119,
+    "seeds": [
+     0,
+     1,
+     2
+    ],
+    "tasks": 40,
+    "k": 85,
+    "n": 119,
+    "rate": 0.714286,
+    "lo": 0.627417,
+    "hi": 0.787752,
+    "total_usd": 0.466184,
+    "per_episode_usd": 0.003918,
+    "per_solved_usd": 0.005485,
+    "mean_task_pass": 0.708333
+   }
+  },
+  {
+   "id": "replication.delta_pooled",
+   "label": "Pooled paired per-task difference, IMP-C champion minus default (mean over seeds per task)",
+   "value": "+11.7 pts; wins/losses/ties 10/1/29",
+   "n": 40,
+   "ci": "95% [+4.2, +20.0], 80% [+6.7, +17.5] pts; one-sided 80% LB +8.3 (bootstrap over tasks, 10000 draws)",
+   "source": "data/imp3.sqlite (docs: episodes, edits, harness_versions; events)",
+   "raw": {
+    "n_tasks": 40,
+    "dropped_tasks": [],
+    "mean": 0.116667,
+    "lo95": 0.041667,
+    "hi95": 0.2,
+    "lo80": 0.066667,
+    "hi80": 0.175,
+    "lb80_one_sided": 0.083333,
+    "wins": 10,
+    "losses": 1,
+    "ties": 29,
+    "n_boot": 10000,
+    "rng_seed": 12345
+   }
+  },
+  {
+   "id": "lap.agreement",
+   "label": "LAP Lean-kernel replay: agreement with the stored verdict (all runs, incl. red-team)",
+   "value": "5636/5636 (100.0%), 0 disagreements, 0 fail-closed",
+   "n": 5636,
+   "ci": "",
+   "source": "results/final/lap_replay.json overall",
+   "raw": {}
+  },
+  {
+   "id": "lap.claims",
+   "label": "LAP: per-record kernel claims (stored verdict bits, by decide) proved",
+   "value": "5636/5636",
+   "n": 5636,
+   "ci": "",
+   "source": "results/final/lap_replay.json per_action_kernel_check",
+   "raw": {}
+  },
+  {
+   "id": "lap.violations",
+   "label": "LAP: violations replayed and matched, by policy",
+   "value": "92 (TEST 8, SKIP 0, GRADER 0, SCOPE 77, NET 7, ATTR 77)",
+   "n": 5636,
+   "ci": "",
+   "source": "results/final/lap_replay.json per_policy",
+   "raw": {}
+  },
+  {
+   "id": "lap.red_team",
+   "label": "LAP: red-team blocked actions refuted by the kernel",
+   "value": "3/3 (CODE-TEST-001)",
+   "n": 3,
+   "ci": "",
+   "source": "results/final/lap_replay.json red_team_blocked",
+   "raw": {}
+  },
+  {
+   "id": "lap.latency",
+   "label": "LAP worker latency per conjecture (p50 / p95)",
+   "value": "182 / 195 ms",
+   "n": null,
+   "ci": "",
+   "source": "results/final/lap_replay.json latency_ms",
+   "raw": {}
+  },
+  {
+   "id": "mongo.tests",
+   "label": "MongoDB: Store/EventLog/VectorIndex test suite against Atlas",
+   "value": "24 passed, 4 failed, 0 skipped",
+   "n": null,
+   "ci": "",
+   "source": "results/final/mongo_tests.json",
+   "raw": {}
+  },
+  {
+   "id": "mongo.migration",
+   "label": "MongoDB: SQLite run stores migrated to Atlas, per-collection counts equal",
+   "value": "6 stores, 1012 documents, counts equal: yes",
+   "n": 6,
+   "ci": "",
+   "source": "results/final/mongo_migration.json",
+   "raw": {}
+  },
+  {
+   "id": "mongo.crosscheck",
+   "label": "MongoDB: aggregation-pipeline numbers cross-checked against numbers.json",
+   "value": "23/23 match, 0 mismatches",
+   "n": 23,
+   "ci": "",
+   "source": "results/final/mongo_numbers.json",
+   "raw": {}
+  },
+  {
+   "id": "mongo.vector",
+   "label": "MongoDB: $vectorSearch top-3 similar rejected edits (latency)",
+   "value": "top hit smoke-C-g0-c0 (rejected_empirical, cosine 0.3797); ANN 143.2 ms, same ids as exact: True",
+   "n": 12,
+   "ci": "",
+   "source": "results/final/mongo_vector_demo.json",
+   "raw": {}
+  },
+  {
+   "id": "mongo.live",
+   "label": "MongoDB: live gated loop on Atlas, edit status transitions seen via change stream",
+   "value": "4 transitions; IMP_C_atlas_r2-g0-c0: rejected_formal; IMP_C_atlas_r2-g0-c1: rejected_formal",
+   "n": 4,
+   "ci": "",
+   "source": "results/final/mongo_live.json",
+   "raw": {}
+  },
+  {
    "id": "imp.IMP_C.train_first",
    "label": "IMP-C: champion training pass rate, generation 0",
    "value": "13/24 = 54.2%",
@@ -294,8 +587,8 @@
   {
    "id": "imp.spend_total",
    "label": "Spend recorded in the final ledger, by budget key",
-   "value": "1.88 USD (arm_A 0.43, arm_C 0.63, imp_holdouts 0.63, imp_select 0.19)",
-   "n": 4170,
+   "value": "3.55 USD (arm_A 0.43, arm_C 0.63, demo 0.84, imp_holdouts 0.63, imp_replication 0.62, imp_select 0.19, mongo_live 0.21)",
+   "n": 6698,
    "ci": "",
    "source": "data/final_spend.sqlite",
    "raw": {
@@ -314,6 +607,18 @@
     "imp_select": {
      "calls": 320,
      "usd": 0.188487
+    },
+    "imp_replication": {
+     "calls": 1905,
+     "usd": 0.622112
+    },
+    "mongo_live": {
+     "calls": 332,
+     "usd": 0.211149
+    },
+    "demo": {
+     "calls": 291,
+     "usd": 0.835978
     }
    }
   },
@@ -807,31 +1112,31 @@
   {
    "id": "latency.per_action",
    "label": "Verifier latency per action",
-   "value": "p50 2.06 ms, p95 41.19 ms, max 105.7 ms",
-   "n": 3410,
+   "value": "p50 1.87 ms, p95 43.27 ms, max 271.5 ms",
+   "n": 5169,
    "ci": "",
    "source": "EpisodeResult.verifier_latency_ms in data/rerun.sqlite and data/imp3.sqlite",
    "raw": {
-    "n_actions": 3410,
-    "n_episodes": 379,
-    "p50": 2.064131,
-    "p95": 41.190526,
-    "max": 105.695318,
-    "ep_ms_p50": 133.932015,
-    "ep_ms_p95": 200.082895,
-    "ep_frac_p50": 0.001192,
-    "ep_frac_p95": 0.004433,
+    "n_actions": 5169,
+    "n_episodes": 539,
+    "p50": 1.873136,
+    "p95": 43.268988,
+    "max": 271.506712,
+    "ep_ms_p50": 137.667632,
+    "ep_ms_p95": 238.473995,
+    "ep_frac_p50": 0.001337,
+    "ep_frac_p95": 0.004905,
     "sources": {
      "rerun": 101,
-     "imp": 278
+     "imp": 438
     }
    }
   },
   {
    "id": "latency.per_episode",
    "label": "Verifier overhead per episode",
-   "value": "p50 134 ms (0.119% of wall time), p95 200 ms (0.443%)",
-   "n": 379,
+   "value": "p50 138 ms (0.134% of wall time), p95 238 ms (0.490%)",
+   "n": 539,
    "ci": "",
    "source": "EpisodeResult.verifier_latency_ms in data/rerun.sqlite and data/imp3.sqlite",
    "raw": {}

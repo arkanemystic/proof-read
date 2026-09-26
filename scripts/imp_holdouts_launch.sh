@@ -1,7 +1,7 @@
 #!/bin/bash
 # Launch final-champion holdouts from results/final/holdout_plan.json (enforce mode, deadline 16:45Z).
 # usage: bash scripts/imp_holdouts_launch.sh CONC_PER_PROCESS
-cd /home/dev/work/proofread; source results/final/env_imp.sh; C=${1:-3}
+cd .; source results/final/env_imp.sh; C=${1:-3}
 uv run python -m scripts.imp_holdouts > /dev/null
 uv run python - <<'PY' > /tmp/imp_holdout_cmds.txt
 import json

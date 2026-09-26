@@ -41,6 +41,104 @@ def _ci(b: dict[str, Any]) -> str:
     return f"95% Wilson [{fmt_pct(b['lo'])}, {fmt_pct(b['hi'])}]" if b.get("n") else "n/a"
 
 
+def _hname(h: str) -> str:
+    return "default genome" if h == "default" else f"IMP-{h} champion"
+
+
+def _replication_numbers(rep: dict[str, Any], src: str) -> list[dict[str, Any]]:
+    """Section 10 holdout replication rows (seed 0 rows above stay unchanged)."""
+    out: list[dict[str, Any]] = []
+    if not any(p["seed"] > 0 for p in rep.get("per_seed", [])):
+        return out
+    for p in rep["per_seed"]:
+        if p["seed"] == 0:
+            continue
+        out.append(_num(f"replication.{p['harness']}.s{p['seed']}.rate",
+                        f"Replication seed {p['seed']}: {_hname(p['harness'])}, capability holdout pass rate "
+                        f"(pristine, enforce){'' if p['n'] >= 40 else f' (partial: {p[chr(110)]} of 40)'}",
+                        _val(p) + f"; {fmt_usd(p['per_solved_usd'])} per solved task; {p['errors']} errored",
+                        p["n"], _ci(p), src, p))
+    for h, p in rep["pooled"].items():
+        out.append(_num(f"replication.{h}.pooled", f"Pooled seeds {p['seeds']}: {_hname(h)}, pass rate over valid "
+                        f"episodes ({p['tasks']} tasks)", _val(p) + f"; {fmt_usd(p['per_solved_usd'])} per solved task",
+                        p["n"], _ci(p), src, p))
+    d = rep.get("diff", {})
+    if d.get("n_tasks"):
+        out.append(_num("replication.delta_pooled", "Pooled paired per-task difference, IMP-C champion minus default "
+                        "(mean over seeds per task)", f"{100 * d['mean']:+.1f} pts; wins/losses/ties "
+                        f"{d['wins']}/{d['losses']}/{d['ties']}", d["n_tasks"],
+                        f"95% [{100 * d['lo95']:+.1f}, {100 * d['hi95']:+.1f}], 80% [{100 * d['lo80']:+.1f}, "
+                        f"{100 * d['hi80']:+.1f}] pts; one-sided 80% LB {100 * d['lb80_one_sided']:+.1f} "
+                        f"(bootstrap over tasks, {d['n_boot']} draws)", src, d))
+    return out
+
+
+LAP_SRC = "results/final/lap_replay.json"
+
+
+def _lap_numbers(lap: dict[str, Any]) -> list[dict[str, Any]]:
+    """Section 10b kernel-checked replay rows (Lean-Agent Protocol lean-worker)."""
+    o = lap.get("overall")
+    if not o:
+        return []
+    pp = lap.get("per_policy", {})
+    kc = lap.get("per_action_kernel_check", {})
+    lat = lap.get("latency_ms", {})
+    rt = lap.get("red_team_blocked", [])
+    return [
+        _num("lap.agreement", "LAP Lean-kernel replay: agreement with the stored verdict (all runs, incl. red-team)",
+             f"{o['agree']}/{o['compared']} ({fmt_pct(o['agreement_rate'])}), {o['disagree']} disagreements, "
+             f"{o['lap_failclosed']} fail-closed", o["compared"], "", LAP_SRC + " overall"),
+        _num("lap.claims", "LAP: per-record kernel claims (stored verdict bits, by decide) proved",
+             f"{kc.get('confirmed')}/{kc.get('claims')}", kc.get("claims"), "", LAP_SRC + " per_action_kernel_check"),
+        _num("lap.violations", "LAP: violations replayed and matched, by policy",
+             f"{o['lap_violations']} (" + ", ".join(f"{k.split('-')[1]} {v['lap']}" for k, v in pp.items()) + ")",
+             o["compared"], "", LAP_SRC + " per_policy"),
+        _num("lap.red_team", "LAP: red-team blocked actions refuted by the kernel",
+             f"{sum(not r.get('lap_ok', True) for r in rt)}/{len(rt)} ("
+             + ", ".join(sorted({p for r in rt for p in r.get('lap_failed', [])})) + ")", len(rt), "",
+             LAP_SRC + " red_team_blocked"),
+        _num("lap.latency", "LAP worker latency per conjecture (p50 / p95)",
+             f"{lat.get('per_conjecture_worker_p50', math.nan):.0f} / {lat.get('per_conjecture_worker_p95', math.nan):.0f} ms",
+             None, "", LAP_SRC + " latency_ms"),
+    ]
+
+
+MONGO_SRC = "results/final/mongo_{}.json"
+
+
+def _mongo_numbers(mongo: dict[str, Any]) -> list[dict[str, Any]]:
+    """Section 10c MongoDB Atlas rows, read from the W-ATLAS outputs (absent files give no rows)."""
+    out: list[dict[str, Any]] = []
+    mig, num, vec, live, tests = (mongo.get(k) or {} for k in ("migration", "numbers", "vector_demo", "live", "tests"))
+    if tests.get("passed") is not None:
+        out.append(_num("mongo.tests", "MongoDB: Store/EventLog/VectorIndex test suite against Atlas",
+                        f"{tests['passed']} passed, {tests.get('failed', 0)} failed, {tests.get('skipped', 0)} skipped",
+                        None, "", MONGO_SRC.format("tests")))
+    if mig.get("stores"):
+        tot = sum(sum(v.get("mongo_counts", {}).values()) for v in mig["stores"].values())
+        out.append(_num("mongo.migration", "MongoDB: SQLite run stores migrated to Atlas, per-collection counts equal",
+                        f"{len(mig['stores'])} stores, {tot} documents, counts equal: {'yes' if mig.get('all_equal') else 'NO'}",
+                        len(mig["stores"]), "", MONGO_SRC.format("migration")))
+    if num.get("checked"):
+        out.append(_num("mongo.crosscheck", "MongoDB: aggregation-pipeline numbers cross-checked against numbers.json",
+                        f"{num['matched']}/{num['checked']} match, {len(num.get('mismatches', []))} mismatches",
+                        num["checked"], "", MONGO_SRC.format("numbers")))
+    if vec.get("exact_enn"):
+        top = vec["exact_enn"][0]
+        out.append(_num("mongo.vector", "MongoDB: $vectorSearch top-3 similar rejected edits (latency)",
+                        f"top hit {top.get('edit_id')} ({top.get('status')}, cosine {top.get('cosine')}); "
+                        f"ANN {vec.get('ann_latency_ms')} ms, same ids as exact: {vec.get('ann_same_ids')}",
+                        vec.get("n_rejected_with_embedding"), "", MONGO_SRC.format("vector_demo")))
+    if live.get("edits") or live.get("transitions") or live.get("timeline"):
+        tl = live.get("transitions") or live.get("timeline") or []
+        out.append(_num("mongo.live", "MongoDB: live gated loop on Atlas, edit status transitions seen via change stream",
+                        f"{len(tl)} transitions; " + "; ".join(
+                            f"{e.get('edit_id', e.get('_id'))}: {e.get('status')}" for e in live.get("edits", [])),
+                        len(tl), "", MONGO_SRC.format("live")))
+    return out
+
+
 def build_numbers(ctx: dict[str, Any]) -> list[dict[str, Any]]:
     S = ctx["sources"]
     out: list[dict[str, Any]] = []
@@ -65,6 +163,9 @@ def build_numbers(ctx: dict[str, Any]) -> list[dict[str, Any]]:
                         if d["n_pairs"] else "n/a", S["imp"], d))
     if not groups:
         out.append(_num("holdout.none", "IMP holdout", "no data yet", 0, "", S["imp"]))
+    out.extend(_replication_numbers(ctx.get("replication") or {}, S["imp"]))
+    out.extend(_lap_numbers(ctx.get("lap") or {}))
+    out.extend(_mongo_numbers(ctx.get("mongo") or {}))
     # IMP training curve and gate ledger
     for rid, pts in ctx["curves"].items():
         if pts:
@@ -217,8 +318,27 @@ def write_dashboard(ctx: dict[str, Any], figs: dict[str, Path], nums: list[dict[
     rows = [[holdout_label(a), g["kind"], g["grader"], f"{g['k']}/{g['n']}", fmt_pct(g["rate"]),
              f"[{fmt_pct(g['lo'])}, {fmt_pct(g['hi'])}]", fmt_usd(g["per_solved_usd"]), fmt_usd(g["per_episode_usd"]),
              g["denied"]] for a, g in ctx["holdout"].items()]
+    rep = ctx.get("replication") or {}
+    rrows = [[_hname(p["harness"]), f"seed {p['seed']}", f"{p['k']}/{p['n']}", fmt_pct(p["rate"]),
+              f"[{fmt_pct(p['lo'])}, {fmt_pct(p['hi'])}]", fmt_usd(p["per_solved_usd"]), p["errors"]]
+             for p in rep.get("per_seed", [])]
+    rrows += [[_hname(h), f"pooled {p['seeds']} (valid only)", f"{p['k']}/{p['n']}", fmt_pct(p["rate"]),
+               f"[{fmt_pct(p['lo'])}, {fmt_pct(p['hi'])}]", fmt_usd(p["per_solved_usd"]), ""]
+              for h, p in rep.get("pooled", {}).items()]
+    d = rep.get("diff", {})
+    rep_html = ""
+    if any(p["seed"] > 0 for p in rep.get("per_seed", [])):
+        rep_html = ("<p class='sub'>Holdout replication (section 10): seeds 1 and 2 added; seed 0 is the original run, "
+                    "unchanged.</p>" + _table(["Genome", "Seed", "Passes", "Rate", "95% Wilson", "USD per solved",
+                                                "Errored"], rrows))
+        if d.get("n_tasks"):
+            rep_html += (f"<p class='sub'>Pooled paired per-task difference (IMP-C minus default, n={d['n_tasks']} "
+                         f"tasks): {100 * d['mean']:+.1f} pts, 95% [{100 * d['lo95']:+.1f}, {100 * d['hi95']:+.1f}], "
+                         f"80% [{100 * d['lo80']:+.1f}, {100 * d['hi80']:+.1f}], one-sided 80% lower bound "
+                         f"{100 * d['lb80_one_sided']:+.1f}; wins/losses/ties {d['wins']}/{d['losses']}/{d['ties']}.</p>")
     section("holdout", "2. Holdout comparison", _table(["Genome", "Split", "Grader", "Passes", "Rate", "95% Wilson",
-                                                         "USD per solved", "USD per episode", "Denied"], rows))
+                                                         "USD per solved", "USD per episode", "Denied"], rows)
+            + rep_html)
     diff_html = []
     for kind, text in diff_lines(ctx["promoted"], width=140, max_lines_per_value=400):
         cls = {"header": "hdr", "meta": "meta", "minus": "minus", "plus": "plus"}.get(kind, "")
@@ -255,12 +375,57 @@ def write_dashboard(ctx: dict[str, Any], figs: dict[str, Path], nums: list[dict[
     lat = ctx["latency"]
     rows = [[k, v] for k, v in lat["sources"].items()]
     section("latency", "8. Verifier latency", _table(["Episode source", "Episodes with latency"], rows))
+    lap = ctx.get("lap") or {}
+    if lap.get("overall"):
+        o = lap["overall"]
+        rows = [[k, v["lap"], v["stored"]] for k, v in lap.get("per_policy", {}).items()]
+        rt_rows = [[r.get("arm"), r.get("mode"), f"{r['action'].get('kind')} {r['action'].get('path')}",
+                    ", ".join(r.get("stored_failed", [])), ", ".join(r.get("lap_failed", []))]
+                   for r in lap.get("red_team_blocked", [])]
+        sec.append(
+            "<section id='lap'><h2>9. Kernel-checked replay (Lean-Agent Protocol)</h2>"
+            f"<p class='sub'>Every stored action record ({o['compared']} across {len(lap.get('dbs', {}))} stores, "
+            f"including red-team) was re-decided by the Lean kernel in LAP's lean-worker via <code>decide</code>: "
+            f"{o['agree']} agree, {o['disagree']} disagree, {o['lap_failclosed']} fail-closed. Trust boundary: path "
+            "and marker classification is trusted Python; the policy decision over those facts is checked by the "
+            "Lean kernel via <code>decide</code>. Lean policies DRAFT: PENDING HUMAN REVIEW.</p>"
+            + _table(["Policy", "LAP violations", "Stored violations"], rows)
+            + _table(["Red-team run", "Mode", "Action", "Stored verdict", "LAP verdict"], rt_rows)
+            + f"<p class='sub'>Source: <code>{LAP_SRC}</code></p></section>")
+    mongo = ctx.get("mongo") or {}
+    mig = mongo.get("migration") or {}
+    if mig.get("stores"):
+        mrows = [[k, v.get("sqlite", ""), sum(v.get("mongo_counts", {}).values()), "yes" if v.get("equal") else "NO"]
+                 for k, v in mig["stores"].items()]
+        num = mongo.get("numbers") or {}
+        vec = mongo.get("vector_demo") or {}
+        vrows = [[r.get("edit_id"), r.get("status"), r.get("cosine"), r.get("rejection_reason")]
+                 for r in vec.get("exact_enn", [])]
+        live = mongo.get("live") or {}
+        lrows = [[e.get("ts", e.get("time", "")), e.get("edit_id", ""), e.get("old", e.get("from", "")),
+                  e.get("new", e.get("to", e.get("status", "")))]
+                 for e in (live.get("transitions") or live.get("timeline") or [])]
+        idx = mongo.get("indexes") or {}
+        sec.append(
+            "<section id='mongo'><h2>10. MongoDB Atlas</h2>"
+            f"<p class='sub'>All run stores migrated to Atlas database <code>{html.escape(str(mig.get('database', '')))}</code> "
+            f"(counts equal: {'yes' if mig.get('all_equal') else 'NO'}). Aggregation pipelines reproduce "
+            f"{num.get('matched', '?')}/{num.get('checked', '?')} headline numbers "
+            f"({len(num.get('mismatches', []))} mismatches). Indexes: "
+            + html.escape(", ".join(f"{c} {v.get('keys')}" for c, v in (idx.get('btree') or {}).items()))
+            + f"; vector search index <code>{html.escape(str((idx.get('vector') or {}).get('name', '')))}</code>.</p>"
+            + _table(["Store", "SQLite file", "Documents in Atlas", "Counts equal"], mrows)
+            + f"<p class='sub'>$vectorSearch for intent: <i>{html.escape(str(vec.get('intent', '')))}</i></p>"
+            + _table(["Rejected edit", "Status", "Cosine", "Rejection reason"], vrows)
+            + _table(["Time (UTC)", "Edit", "Old status", "New status"], lrows)
+            + "<p class='sub'>Source: <code>results/final/mongo_*.json</code></p></section>")
     num_rows = "".join(f"<tr><td>{html.escape(n['label'])}</td><td>{html.escape(n['value'])}</td><td class='num'>"
                        f"{'' if n['n'] is None else n['n']}</td><td>{html.escape(n['ci'] or '')}</td><td><code>"
                        f"{html.escape(n['source'])}</code></td></tr>" for n in nums)
     srcs = "".join(f"<li>{html.escape(k)}: <code>{html.escape(v)}</code></li>" for k, v in S.items())
     nav = "".join(f"<a href='#{k}'>{i + 1}</a>" for i, k in enumerate(
-        ["improvement", "holdout", "learned", "gate_ledger", "red_team", "natural", "coverage", "latency"]))
+        ["improvement", "holdout", "learned", "gate_ledger", "red_team", "natural", "coverage", "latency"]
+        + (["lap"] if lap.get("overall") else []) + (["mongo"] if mig.get("stores") else [])))
     doc = f"""<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Proofread final results</title>
 <meta name="viewport" content="width=device-width,initial-scale=1"><style>{CSS}</style></head>
 <body><div class="viz-root"><h1>Proofread: final results</h1>

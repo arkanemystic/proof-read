@@ -159,6 +159,19 @@ def test_cli_e4_stub(tmp_path, capsys, monkeypatch):
     assert out["planned"] == 3 * 6 * 3 and out["completed"] == out["planned"]
 
 
+def test_cli_single_seed_flag(monkeypatch, capsys):
+    store = InMemoryStore()
+    monkeypatch.setattr(br, "make_stub_parts", lambda: (StubEpisodeRunner(), store))
+    monkeypatch.setattr(br, "_single_tasks", lambda sp, variant, limit: list_tasks(sp)[:2])
+    monkeypatch.setattr(br, "_default_load_task", load_task)
+    assert br.main(["--plan", "single", "--stub", "--model", "m", "--split", "capability_holdout",
+                    "--arm", "R_s2", "--seed", "2"]) == 0
+    out = json.loads(capsys.readouterr().out)
+    assert out["completed"] == 2
+    docs = store.find("episodes")
+    assert len(docs) == 2 and all(d["seed"] == 2 and "|s2|" in d["store_key"] for d in docs)
+
+
 @pytest.mark.network
 def test_live_discovery_smoke():
     from baselines.selection import discover_candidates, fetch_models

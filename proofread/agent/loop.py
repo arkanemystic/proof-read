@@ -16,7 +16,7 @@ import posixpath
 import time
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any
 
 from proofread.contracts import (
     FAILCLOSED_POLICY, WORKSPACE, Action, BudgetExceeded, ChatMessage, Genome, Mode, ModelClient, Sandbox, Task,
@@ -41,27 +41,19 @@ def _est_tokens(m: ChatMessage) -> int:
 
 
 class Tracer:
-    """Append-only JSONL trace at <trace_dir>/<episode_id>.jsonl, optionally teed to a sink (e.g. the
-    MongoDB actions collection). The file is the source of truth; sink errors never reach the loop."""
+    """Append-only JSONL trace at <trace_dir>/<episode_id>.jsonl."""
 
-    def __init__(self, path: str | Path | None, sink: Callable[[dict[str, Any]], None] | None = None) -> None:
+    def __init__(self, path: str | Path | None) -> None:
         self.path = Path(path) if path else None
-        self.sink = sink
         if self.path:
             self.path.parent.mkdir(parents=True, exist_ok=True)
 
     def write(self, type_: str, **payload: Any) -> None:
-        if not self.path and not self.sink:
+        if not self.path:
             return
         rec = {"ts": time.time(), "type": type_, **payload}
-        if self.path:
-            with self.path.open("a", encoding="utf-8") as f:
-                f.write(json.dumps(rec, ensure_ascii=False, default=str) + "\n")
-        if self.sink:
-            try:
-                self.sink(rec)
-            except Exception:  # noqa: BLE001
-                pass
+        with self.path.open("a", encoding="utf-8") as f:
+            f.write(json.dumps(rec, ensure_ascii=False, default=str) + "\n")
 
 
 def _dedup(xs: list[str]) -> list[str]:

@@ -1,0 +1,185 @@
+{
+ "database": "proofread_runs",
+ "stores": {
+  "rerun": {
+   "sqlite": "data/rerun.sqlite",
+   "sqlite_counts": {
+    "episodes": 114
+   },
+   "mongo_counts": {
+    "episodes": 114
+   },
+   "equal": true,
+   "rejected_edits_with_embedding": 0,
+   "vectors_in_sqlite": 0,
+   "seconds": 1.05,
+   "finished_at": "2026-09-26T17:37:39+00:00"
+  },
+  "proofread": {
+   "sqlite": "data/proofread.sqlite",
+   "sqlite_counts": {
+    "episodes": 175,
+    "harness_versions": 2,
+    "edits": 4,
+    "rejected_edits": 4,
+    "vectors": 4,
+    "events": 26,
+    "cursors": 0
+   },
+   "mongo_counts": {
+    "episodes": 175,
+    "harness_versions": 2,
+    "edits": 4,
+    "rejected_edits": 4,
+    "vectors": 4,
+    "events": 26,
+    "cursors": 0
+   },
+   "equal": true,
+   "rejected_edits_with_embedding": 4,
+   "vectors_in_sqlite": 4,
+   "seconds": 1.11,
+   "finished_at": "2026-09-26T17:37:40+00:00"
+  },
+  "imp": {
+   "sqlite": "data/imp.sqlite",
+   "sqlite_counts": {
+    "harness_versions": 2,
+    "episodes": 88,
+    "events": 2,
+    "cursors": 0
+   },
+   "mongo_counts": {
+    "harness_versions": 2,
+    "episodes": 88,
+    "events": 2,
+    "cursors": 0
+   },
+   "equal": true,
+   "rejected_edits_with_embedding": 0,
+   "vectors_in_sqlite": 0,
+   "seconds": 0.55,
+   "finished_at": "2026-09-26T17:37:41+00:00"
+  },
+  "imp2": {
+   "sqlite": "data/imp2.sqlite",
+   "sqlite_counts": {
+    "harness_versions": 2,
+    "episodes": 35,
+    "edits": 1,
+    "events": 4,
+    "cursors": 0
+   },
+   "mongo_counts": {
+    "harness_versions": 2,
+    "episodes": 35,
+    "edits": 1,
+    "events": 4,
+    "cursors": 0
+   },
+   "equal": true,
+   "rejected_edits_with_embedding": 0,
+   "vectors_in_sqlite": 0,
+   "seconds": 0.64,
+   "finished_at": "2026-09-26T17:37:42+00:00"
+  },
+  "smoke": {
+   "sqlite": "data/smoke.sqlite",
+   "sqlite_counts": {
+    "harness_versions": 2,
+    "episodes": 29,
+    "edits": 4,
+    "rejected_edits": 3,
+    "vectors": 3,
+    "events": 20,
+    "cursors": 0
+   },
+   "mongo_counts": {
+    "harness_versions": 2,
+    "episodes": 29,
+    "edits": 4,
+    "rejected_edits": 3,
+    "vectors": 3,
+    "events": 20,
+    "cursors": 0
+   },
+   "equal": true,
+   "rejected_edits_with_embedding": 3,
+   "vectors_in_sqlite": 3,
+   "seconds": 0.91,
+   "finished_at": "2026-09-26T17:37:42+00:00"
+  },
+  "imp3": {
+   "sqlite": "data/imp3.sqlite",
+   "sqlite_counts": {
+    "harness_versions": 3,
+    "episodes": 438,
+    "edits": 6,
+    "rejected_edits": 5,
+    "vectors": 5,
+    "events": 31,
+    "cursors": 0
+   },
+   "mongo_counts": {
+    "harness_versions": 3,
+    "episodes": 438,
+    "edits": 6,
+    "rejected_edits": 5,
+    "vectors": 5,
+    "events": 31,
+    "cursors": 0
+   },
+   "equal": true,
+   "rejected_edits_with_embedding": 5,
+   "vectors_in_sqlite": 5,
+   "seconds": 1.97,
+   "finished_at": "2026-09-26T17:49:51+00:00",
+   "previous_pass": {
+    "sqlite_counts": {
+     "harness_versions": 3,
+     "episodes": 438,
+     "edits": 6,
+     "rejected_edits": 5,
+     "vectors": 5,
+     "events": 31,
+     "cursors": 0
+    },
+    "finished_at": "2026-09-26T17:40:01+00:00",
+    "seconds": 2.18
+   }
+  }
+ },
+ "passes": [
+  {
+   "stores": [
+    "rerun",
+    "proofread",
+    "imp",
+    "imp2",
+    "smoke",
+    "imp3"
+   ],
+   "started_at": "2026-09-26T17:37:38+00:00",
+   "seconds": 5.53,
+   "all_equal": true
+  },
+  {
+   "stores": [
+    "imp3"
+   ],
+   "started_at": "2026-09-26T17:39:59+00:00",
+   "seconds": 2.18,
+   "all_equal": true
+  },
+  {
+   "stores": [
+    "imp3"
+   ],
+   "started_at": "2026-09-26T17:49:49+00:00",
+   "seconds": 1.97,
+   "all_equal": true
+  }
+ ],
+ "all_equal": true,
+ "method": "scripts/mongo_migrate_all.py: read-only SQLite, _id '<store>::<id>', tags source_store and run_label, events to migrated_events, idempotent upserts; counts are count_documents per source_store after the write"
+}

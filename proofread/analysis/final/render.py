@@ -180,8 +180,10 @@ def _bars(ax, labels, vals, colors, errs=None, texts=None, ylim=None) -> None:
         ax.text(x[i], v + up + top * 0.02, t, ha="center", va="bottom", fontsize=7.5, color=INK2)
 
 
-def fig_holdout(groups: dict[str, dict[str, Any]], diffs: dict[str, dict[str, Any]], path: Path, source: str) -> Path:
+def fig_holdout(groups: dict[str, dict[str, Any]], diffs: dict[str, dict[str, Any]], path: Path, source: str,
+                rep: dict[str, Any] | None = None) -> Path:
     title = "2. Holdout: default genome vs evolved champions (enforce mode)"
+    has_rep = bool(rep and any(p["seed"] > 0 for p in rep.get("per_seed", [])))
     cap = [g for g in groups.values() if g["kind"] == "capability"]
     cheat = [g for g in groups.values() if g["kind"] == "cheat"]
     if not cap and not cheat:
@@ -189,9 +191,12 @@ def fig_holdout(groups: dict[str, dict[str, Any]], diffs: dict[str, dict[str, An
     order = {"IMPH_default": 0, "IMPH_C": 1, "IMPH_A": 2, "IMPH_Cnoret": 3}
     cap.sort(key=lambda g: (order.get(g["arm"], 9), g["arm"]))
     cheat.sort(key=lambda g: (order.get(g["arm"].removesuffix("_cheat"), 9), g["arm"]))
-    fig, axes = _fig(1, 3, w=13, h=4.8, gridspec_kw={"width_ratios": [1.2, 1.2, 1]})
+    fig, axes = _fig(2 if has_rep else 1, 3, w=13, h=9.4 if has_rep else 4.8,
+                     gridspec_kw={"width_ratios": [1.2, 1.2, 1]})
     _title(fig, title)
     a1, a2, a3 = axes[0]
+    if has_rep:
+        _replication_row(axes[1], rep)
     if cap:
         labels = [holdout_label(g["arm"]) + (f"\n(partial: {g['n']} of {g['expected_n']})" if g.get("partial") else "")
                   for g in cap]
@@ -225,10 +230,80 @@ def fig_holdout(groups: dict[str, dict[str, Any]], diffs: dict[str, dict[str, An
         _bars(a3, labels, vals, [arm_color(g["arm"]) for g in cheat], errs,
               [f"{g['k']}/{g['n']}, {g['denied']} denied" for g in cheat], ylim=(0, 115))
         a3.set_ylabel("impossible-task pass rate, workspace grader (%)")
-        a3.set_title("Cheat check: one-off impossible tasks", loc="left")
+        a3.set_title("Cheat check: one-off tasks", loc="left")
     else:
         nodata(a3, "no cheat-check episodes (IMPH_C_cheat, IMPH_A_cheat)")
-    return _save(fig, path, source)
+    if has_rep:
+        a1.set_title("Seed 0: capability pass rate, 95% Wilson", loc="left")
+    return _save(fig, path, source, bottom=0.07 if has_rep else 0.12)
+
+
+def _replication_row(axes, rep: dict[str, Any]) -> None:
+    """Section 10 replication: per-seed and pooled pass rate, cost per solved task, pooled paired difference."""
+    b1, b2, b3 = axes
+    seeds = sorted({p["seed"] for p in rep["per_seed"]})
+    cols = [f"seed {s}" for s in seeds] + ["pooled"]
+    harn = [("default", "default genome", NEUTRAL), ("C", "IMP-C champion", ARM_COLOR["IMP_C"])]
+    x = np.arange(len(cols))
+    w = 0.36
+    for j, (h, label, color) in enumerate(harn):
+        blocks = [next((p for p in rep["per_seed"] if p["harness"] == h and p["seed"] == s), None) for s in seeds]
+        blocks.append(rep["pooled"].get(h))
+        vals = [100 * b["rate"] if b and b.get("n") else math.nan for b in blocks]
+        lo = [100 * (b["rate"] - b["lo"]) if b and b.get("n") else 0 for b in blocks]
+        hi = [100 * (b["hi"] - b["rate"]) if b and b.get("n") else 0 for b in blocks]
+        xs = x + (j - 0.5) * w
+        b1.bar(xs, [0 if math.isnan(v) else v for v in vals], width=w, color=color, edgecolor=SURFACE,
+               linewidth=1.5, label=label)
+        b1.errorbar(xs, [0 if math.isnan(v) else v for v in vals], yerr=[lo, hi], fmt="none", ecolor=INK2,
+                    elinewidth=1, capsize=2.5)
+        for xi, b in zip(xs, blocks):
+            if b and b.get("n"):
+                b1.text(xi, 2, f"{b['k']}/{b['n']}", ha="center", va="bottom", fontsize=7, color=SURFACE,
+                        rotation=90)
+        cps = [b["per_solved_usd"] if b and b.get("k") else math.nan for b in blocks]
+        b2.bar(xs, [0 if math.isnan(v) else v for v in cps], width=w, color=color, edgecolor=SURFACE,
+               linewidth=1.5, label=label)
+        for xi, v in zip(xs, cps):
+            if not math.isnan(v):
+                b2.text(xi, v, f"{v:.4f}", ha="center", va="bottom", fontsize=6.5, color=INK2)
+    for ax in (b1, b2):
+        ax.set_xticks(x)
+        ax.set_xticklabels(cols, fontsize=8)
+        _legend(ax, loc="upper center", ncol=2)
+    b1.set_ylim(0, 128)
+    b1.set_ylabel("pass rate, pristine grader (%)")
+    b1.set_title("Seeds 0 to 2: pass rate, 95% Wilson CI", loc="left")
+    b2.set_ylabel("USD per solved task")
+    b2.set_title("Seeds 0 to 2: cost per solved task", loc="left")
+    b2.set_ylim(0, b2.get_ylim()[1] * 1.3)
+    d = rep.get("diff", {})
+    if not d.get("n_tasks"):
+        nodata(b3, "no task has episodes for both harnesses")
+        return
+    s0 = rep.get("seed0_diff") or {}
+    rows = [("pooled, 95%", d["mean"], d["lo95"], d["hi95"]), ("pooled, 80%", d["mean"], d["lo80"], d["hi80"])]
+    if s0.get("n_pairs"):
+        rows.insert(0, ("seed 0 only, 95%", s0["mean"], s0["lo"], s0["hi"]))
+    ys = np.arange(len(rows))[::-1]
+    for y, (lab, m, lo, hi) in zip(ys, rows):
+        b3.errorbar([100 * m], [y], xerr=[[100 * (m - lo)], [100 * (hi - m)]], fmt="o", color=ARM_COLOR["IMP_C"],
+                    ecolor=ARM_COLOR["IMP_C"], elinewidth=2, capsize=4)
+        b3.text(100 * hi + 1, y, f"{100 * m:+.1f} [{100 * lo:+.1f}, {100 * hi:+.1f}]", va="center", fontsize=7.5,
+                color=INK2)
+    b3.axvline(0, color=MUTED, linewidth=1, linestyle="--")
+    b3.set_yticks(ys)
+    b3.set_yticklabels([r[0] for r in rows], fontsize=8)
+    b3.set_ylim(-0.7, len(rows) - 0.3)
+    b3.xaxis.grid(True, color=GRID, linewidth=0.8)
+    b3.yaxis.grid(False)
+    lo_x = min(100 * r[2] for r in rows)
+    hi_x = max(100 * r[3] for r in rows)
+    b3.set_xlim(min(-5, lo_x - 5), hi_x + 22)
+    b3.set_xlabel("per-task difference (pts), bootstrap over tasks")
+    b3.set_title(f"IMP-C minus default, paired by task (n={d['n_tasks']})\n"
+                 f"W/L/T {d['wins']}/{d['losses']}/{d['ties']}; 1-sided 80% LB "
+                 f"{100 * d['lb80_one_sided']:+.1f} pts", loc="left", fontsize=9)
 
 
 # ------------------------------------------------------------------ 3. promoted edits (genome diff)

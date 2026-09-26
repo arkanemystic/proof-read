@@ -1,4 +1,4 @@
-# biject-api interface (as read from /home/dev/work/biject-api, read-only)
+# biject-api interface (as read from ../biject-api, read-only)
 
 Sources: biject-api CLAUDE.md (Invariants, Request identity, Conjecture builder S4-A-02, File-to-role
 map), AGENTS.md, docker-compose*.yml, backend/Dockerfile(.local), backend/app/models.py,
@@ -49,12 +49,12 @@ backend/app/main.py routes, backend/lean_worker/worker.py.
 ## Reproduce the local start attempt
 
 ```
-cd /home/dev/work/proofread
+cd .
 docker compose -p proofread-biject --env-file biject-local/.env \
-  -f /home/dev/work/biject-api/docker-compose.yml -f biject-local/docker-compose.local.yml up -d --build
+  -f ../biject-api/docker-compose.yml -f biject-local/docker-compose.local.yml up -d --build
 docker logs proofread-biject-backend-1 | tail     # olean signature check failed, restart loop
 docker compose -p proofread-biject --env-file biject-local/.env \
-  -f /home/dev/work/biject-api/docker-compose.yml -f biject-local/docker-compose.local.yml down -v
+  -f ../biject-api/docker-compose.yml -f biject-local/docker-compose.local.yml down -v
 ```
 
 biject-local/.env holds fresh local keys (AUDIT_SIGNING_KEY, LEAN_SIGNING_KEY, BIJECT_API_KEYS,

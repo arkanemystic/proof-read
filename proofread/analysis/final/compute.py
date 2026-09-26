@@ -234,9 +234,15 @@ def _passed_holdout(e: dict[str, Any], grader: str) -> bool:
     return bool(e.get("passed_workspace"))
 
 
+def is_replication_arm(arm: str) -> bool:
+    """Section 10 replication runs (IMPH_<harness>_s<seed>) are analysed by replication(), not holdout_groups()."""
+    return bool(REP_ARM_RE.match(arm))
+
+
 def holdout_groups(episodes: list[dict[str, Any]]) -> dict[str, dict[str, Any]]:
     """Per IMPH_* arm: pass rate (pristine grader for capability, workspace for *_cheat), cost, per-task map."""
-    arms = sorted({str(e.get("arm")) for e in episodes if str(e.get("arm") or "").startswith(HOLDOUT_PREFIX)})
+    arms = sorted({str(e.get("arm")) for e in episodes if str(e.get("arm") or "").startswith(HOLDOUT_PREFIX)
+                   and not is_replication_arm(str(e.get("arm")))})
     out: dict[str, dict[str, Any]] = {}
     for arm in arms:
         g = [e for e in episodes if e.get("arm") == arm]
@@ -283,6 +289,71 @@ def holdout_diffs(groups: dict[str, dict[str, Any]]) -> dict[str, dict[str, Any]
             continue
         out[arm] = paired_bootstrap_diff(g["per_task"], base["per_task"])
     return out
+
+
+# ------------------------------------------------------------------ holdout replication (section 10)
+REP_ARM_RE = re.compile(r"^IMPH_(default|C)_s(\d+)$")
+REP_HARNESSES = ("default", "C")
+
+
+def _one_sided_lb(d: np.ndarray, level: float, n_boot: int, seed: int) -> float:
+    rng = np.random.default_rng(seed)
+    means = d[rng.integers(0, d.size, size=(n_boot, d.size))].mean(axis=1)
+    return float(np.quantile(means, 1 - level))
+
+
+def replication(episodes: list[dict[str, Any]], n_boot: int = 10000, seed: int = 12345) -> dict[str, Any]:
+    """Pre-registered section 10 analysis (DECISIONS D-H02). Seed 0 = arms IMPH_default / IMPH_C (reported unchanged,
+    every stored episode counts); seeds >= 1 = arms IMPH_<harness>_s<seed>. Per seed: pristine pass rate with Wilson
+    CI and cost per solved task. Pooled: per task, mean pass over that harness's valid (non-errored) episodes across
+    seeds; headline = mean paired per-task difference (C minus default) with 95% and 80% percentile bootstrap
+    intervals resampling tasks, plus the one-sided 80% lower bound; task-level wins/losses/ties; pooled cost per
+    solved task."""
+    by: dict[tuple[str, int], list[dict[str, Any]]] = {}
+    for e in episodes:
+        arm = str(e.get("arm") or "")
+        if arm in ("IMPH_default", "IMPH_C"):
+            key = (arm.removeprefix("IMPH_"), 0)
+        else:
+            m = REP_ARM_RE.match(arm)
+            if not m:
+                continue
+            key = (m.group(1), int(m.group(2)))
+        by.setdefault(key, []).append(e)
+    per_seed: list[dict[str, Any]] = []
+    for (h, sd), g in sorted(by.items(), key=lambda kv: (kv[0][1], REP_HARNESSES.index(kv[0][0]))):
+        k = sum(_passed_holdout(e, "pristine") for e in g)
+        valid = [e for e in g if not has_error(e)]
+        kv = sum(_passed_holdout(e, "pristine") for e in valid)
+        per_seed.append({"harness": h, "seed": sd, "arm": g[0].get("arm"), **rate_block(k, len(g)),
+                         **cost_block(g, k), "errors": sum(has_error(e) for e in g),
+                         "aborted": sum(is_aborted(e) for e in g), "valid": rate_block(kv, len(valid)),
+                         "denied": sum(int(e.get("n_denied") or 0) for e in g),
+                         "violating": sum(bool(e.get("violations")) for e in g)})
+    pooled: dict[str, Any] = {}
+    task_means: dict[str, dict[str, float]] = {}
+    for h in REP_HARNESSES:
+        eps = [e for (hh, _), g in by.items() if hh == h for e in g if not has_error(e)]
+        per: dict[str, list[float]] = {}
+        for e in eps:
+            per.setdefault(str(e.get("task_id")), []).append(float(_passed_holdout(e, "pristine")))
+        task_means[h] = {t: float(np.mean(v)) for t, v in per.items()}
+        k = sum(_passed_holdout(e, "pristine") for e in eps)
+        pooled[h] = {"episodes": len(eps), "seeds": sorted({sd for (hh, sd) in by if hh == h}),
+                     "tasks": len(per), **rate_block(k, len(eps)), **cost_block(eps, k),
+                     "mean_task_pass": float(np.mean(list(task_means[h].values()))) if per else math.nan}
+    a, b = task_means.get("C", {}), task_means.get("default", {})
+    keys = sorted(set(a) & set(b))
+    diff: dict[str, Any] = {"n_tasks": len(keys), "dropped_tasks": sorted(set(a) ^ set(b))}
+    if keys:
+        d = np.array([a[t] - b[t] for t in keys], dtype=float)
+        ci95 = paired_bootstrap_diff(a, b, n_boot=n_boot, seed=seed, alpha=0.05)
+        ci80 = paired_bootstrap_diff(a, b, n_boot=n_boot, seed=seed, alpha=0.20)
+        diff.update(mean=float(d.mean()), lo95=ci95["lo"], hi95=ci95["hi"], lo80=ci80["lo"], hi80=ci80["hi"],
+                    lb80_one_sided=_one_sided_lb(d, 0.80, n_boot, seed),
+                    wins=int((d > 0).sum()), losses=int((d < 0).sum()), ties=int((d == 0).sum()),
+                    n_boot=n_boot, rng_seed=seed)
+    return {"per_seed": per_seed, "pooled": pooled, "diff": diff, "task_means": task_means}
 
 
 # ------------------------------------------------------------------ red team

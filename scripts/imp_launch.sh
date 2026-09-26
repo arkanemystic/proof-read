@@ -1,6 +1,6 @@
 #!/bin/bash
 # Section 9 IMP arms + default-genome capability holdout (D-F10). Resumable: rerun to continue.
-cd /home/dev/work/proofread; source results/final/env_imp.sh; mkdir -p logs/final
+cd .; source results/final/env_imp.sh; mkdir -p logs/final
 for arm in C A; do
   conc=$([ $arm = C ] && echo 6 || echo 4)
   nohup uv run python -m proofread.evolve.orchestrator --arm $arm --db data/imp3.sqlite --generations 3 --candidates 3 \

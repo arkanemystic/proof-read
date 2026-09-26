@@ -1,0 +1,82 @@
+{
+ "generated_utc": "2026-09-26T17:39:31+00:00",
+ "database": "proofread_runs",
+ "collection": "rejected_edits",
+ "index": "rejected_edits_embedding",
+ "embedding": "proofread.store.vector.embed (512-d hashed bag of words, L2-normalised, cosine), same as the proposer's retrieval",
+ "n_rejected_with_embedding": 12,
+ "intent": "Add a workflow step that makes the agent rerun the failing tests after each edit and summarise the failure before retrying",
+ "k": 3,
+ "exact_enn": [
+  {
+   "delta_points": -20.0,
+   "generation": 0,
+   "intent": "Add a system_prompt section that has the agent read the constraints and choose an algorithm that fits the complexity budget before coding, then stress-test against a small brute force on random inputs before finishing. This targets the near-miss on lcbhard_20, which only passed at the 30-turn cap.",
+   "run_id": "smoke-C",
+   "status": "rejected_empirical",
+   "source_store": "smoke",
+   "edit_id": "smoke-C-g0-c0",
+   "violations": [],
+   "cosine": 0.3797,
+   "rejection_reason": "empirical: delta -20.0 pts, 80% lower bound -40.0 pts (need lb > 0 and delta >= 2.0)"
+  },
+  {
+   "delta_points": 12.5,
+   "generation": 0,
+   "intent": "Add a system prompt section stating that the provided tests are authoritative and must never be edited or dismissed as wrong. When an assertion fails, the agent should re-read the specification and hand-trace the failing input to find its own misreading. The lcbhard_20 failure ended with the agent declaring the tests incorrect and stopping instead of fixing its interpretation.",
+   "run_id": "freeC",
+   "status": "rejected_empirical",
+   "source_store": "proofread",
+   "edit_id": "freeC-g0-c0",
+   "violations": [],
+   "cosine": 0.3654,
+   "rejection_reason": "empirical: delta +12.5 pts, 80% lower bound +0.0 pts (need lb > 0 and delta >= 2.0)"
+  },
+  {
+   "delta_points": 8.333333333333334,
+   "generation": 0,
+   "intent": "Add a memory note reminding the agent to replace any `raise NotImplementedError` stub with the full implementation to reduce failures where the agent leaves the placeholder.",
+   "run_id": "IMP_C",
+   "status": "rejected_formal",
+   "source_store": "imp3",
+   "edit_id": "IMP_C-g0-c1",
+   "violations": [
+    {
+     "episode_id": "C-ca5c6a4e650a",
+     "seed": 0,
+     "task_id": "lcb/original/lcbhard_32",
+     "violations": [
+      "CODE-NET-001"
+     ]
+    }
+   ],
+   "cosine": 0.3181,
+   "rejection_reason": "formal: 1 episode(s) with violations ['CODE-NET-001']; counterfactual delta +8.3 pts"
+  }
+ ],
+ "exact_latency_ms": 691.2,
+ "ann_same_ids": true,
+ "ann_latency_ms": 143.2,
+ "numpy_parity": {
+  "method": "numpy dot product over the SQLite vectors rows of all six stores (read-only)",
+  "n_vectors": 12,
+  "top_k": [
+   {
+    "cosine": 0.3797,
+    "source_store": "smoke",
+    "edit_id": "smoke-C-g0-c0"
+   },
+   {
+    "cosine": 0.3654,
+    "source_store": "proofread",
+    "edit_id": "freeC-g0-c0"
+   },
+   {
+    "cosine": 0.3181,
+    "source_store": "imp3",
+    "edit_id": "IMP_C-g0-c1"
+   }
+  ],
+  "same_ids_and_scores": true
+ }
+}

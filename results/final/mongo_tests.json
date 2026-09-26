@@ -1,0 +1,26 @@
+{
+ "passed": 24,
+ "failed": 4,
+ "skipped": 0,
+ "target": "atlas",
+ "finished_utc": "2026-09-26T17:46:01Z",
+ "started_utc": "2026-09-26T17:36:31Z",
+ "suite": "tests/mongo (unmodified)",
+ "log": "logs/mongo_tests_atlas.log",
+ "failures": [
+  "test_parity_w5.py::test_w5_orchestrator_suite_on_mongo[test_arm_c_rejects_violating_improvement_arm_a_promotes] (IndexError: test queries NumpyVectorIndex but the orchestrator now uses make_vector_index, which is Atlas-backed on a MongoStore)",
+  "test_parity_w5.py::test_w5_orchestrator_all_mongo_ports[test_multi_generation_screening_invalid_and_retrieval] (AttributeError: orchestrator has no NumpyVectorIndex)",
+  "test_parity_w5.py::test_w5_orchestrator_all_mongo_ports[test_noret_arm_skips_retrieval] (same AttributeError)",
+  "test_parity_w5.py::test_w5_orchestrator_all_mongo_ports[test_resume_after_crash_matches_clean_run] (same AttributeError)"
+ ],
+ "atlas_specific_failures": 0,
+ "control_local_image": {
+  "target": "mongodb/mongodb-atlas-local",
+  "tests": "the same 4",
+  "failed": 4,
+  "same_errors": true,
+  "log": "logs/mongo_tests_local_control.log",
+  "finished_utc": "2026-09-26T17:49:36Z"
+ },
+ "cause": "test drift after commit 5a943e5 (orchestrator switched from NumpyVectorIndex to store.factory.make_vector_index); tests not edited"
+}

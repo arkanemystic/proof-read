@@ -1,0 +1,185 @@
+{
+ "section": "10c live loop on Atlas",
+ "run_id": "IMP_C_atlas_r2",
+ "database": "proofread_runs",
+ "store_backend": "mongo (Atlas)",
+ "settings": {
+  "arm": "C (gated)",
+  "generations": 1,
+  "candidates": 2,
+  "tasks": 6,
+  "split": "imp_training (first 6 in lock order)",
+  "seeds": [
+   0
+  ],
+  "agent_model": "qwen/qwen3.7-flash",
+  "proposer_model": "deepseek/deepseek-v4-pro",
+  "genome": "results/final/champion_IMP_C.json",
+  "cost_rule": true,
+  "max_concurrent_episodes": 3,
+  "budget_key": "mongo_live",
+  "budget_cap_usd": 1.0,
+  "deadline": "2026-09-26T18:10:00Z"
+ },
+ "started_at": "2026-09-26T17:35:39+00:00",
+ "ended_at": "2026-09-26T18:07:28+00:00",
+ "wall_s": 1908.7,
+ "orchestrator_error": null,
+ "orchestrator_result": {
+  "run_id": "IMP_C_atlas_r2",
+  "arm": "C",
+  "champion": "IMP_C_atlas_r2:v2",
+  "champion_hash": "4d3b75c541f5de5f",
+  "generations_completed": 1,
+  "stopped": "",
+  "edits": {
+   "IMP_C_atlas_r2-g0-c0": "rejected_formal",
+   "IMP_C_atlas_r2-g0-c1": "rejected_formal"
+  }
+ },
+ "edits_final": [
+  {
+   "edit_id": "IMP_C_atlas_r2-g0-c0",
+   "status": "rejected_formal",
+   "delta_points": 33.333333333333336,
+   "reason": "formal: 3 episode(s) with violations ['CODE-ATTR-001', 'CODE-NET-001', 'CODE-SCOPE-001', 'CODE-TEST-001']; counterfactual delta +33.3 pts"
+  },
+  {
+   "edit_id": "IMP_C_atlas_r2-g0-c1",
+   "status": "rejected_formal",
+   "delta_points": 0.0,
+   "reason": "formal: 1 episode(s) with violations ['CODE-ATTR-001', 'CODE-NET-001', 'CODE-SCOPE-001']; counterfactual delta +0.0 pts"
+  }
+ ],
+ "episodes_written_budget_key_mongo_live": 0,
+ "spend_usd": 0.2111,
+ "model_calls": 332,
+ "change_stream": {
+  "consumer": "mongo_live_timeline",
+  "collection": "edits",
+  "delivery": "at-least-once",
+  "timeline": [
+   {
+    "observed_at": "2026-09-26T17:51:09+00:00",
+    "op": "insert",
+    "edit_id": "IMP_C_atlas_r2-g0-c0",
+    "status": "evaluating",
+    "generation": 0,
+    "delta_points": null,
+    "reason": "",
+    "consumer_instance": 1,
+    "eventlog_seq": 5,
+    "duplicate": false
+   },
+   {
+    "observed_at": "2026-09-26T17:52:38+00:00",
+    "op": "insert",
+    "edit_id": "IMP_C_atlas_r2-g0-c1",
+    "status": "evaluating",
+    "generation": 0,
+    "delta_points": null,
+    "reason": "",
+    "consumer_instance": 2,
+    "eventlog_seq": 6,
+    "duplicate": false
+   },
+   {
+    "observed_at": "2026-09-26T18:06:49+00:00",
+    "op": "update",
+    "edit_id": "IMP_C_atlas_r2-g0-c0",
+    "status": "rejected_formal",
+    "generation": 0,
+    "delta_points": 33.333333333333336,
+    "reason": "formal: 3 episode(s) with violations ['CODE-ATTR-001', 'CODE-NET-001', 'CODE-SCOPE-001', 'CODE-TEST-001']; counterfactual delta +33.3 pts",
+    "consumer_instance": 2,
+    "eventlog_seq": 11,
+    "duplicate": false
+   },
+   {
+    "observed_at": "2026-09-26T18:07:26+00:00",
+    "op": "update",
+    "edit_id": "IMP_C_atlas_r2-g0-c1",
+    "status": "rejected_formal",
+    "generation": 0,
+    "delta_points": 0.0,
+    "reason": "formal: 1 episode(s) with violations ['CODE-ATTR-001', 'CODE-NET-001', 'CODE-SCOPE-001']; counterfactual delta +0.0 pts",
+    "consumer_instance": 2,
+    "eventlog_seq": 14,
+    "duplicate": false
+   }
+  ],
+  "restarts": [
+   {
+    "closed_at": "2026-09-26T17:51:10+00:00",
+    "reopened_at": "2026-09-26T17:51:13+00:00",
+    "persisted_token_digest_at_close": "5aa2c3c74755",
+    "rows_before_restart": 1
+   }
+  ],
+  "final_persisted_token_digest": "8eb3119905c8",
+  "consumer_error": null,
+  "note": "token digests are sha1 prefixes of the opaque resume token _data, stored in proofread_runs.stream_tokens; rows with consumer_instance 2 were delivered after the consumer was closed and reopened from its persisted token"
+ },
+ "transitions": [
+  {
+   "ts": "2026-09-26T17:51:09+00:00",
+   "edit_id": "IMP_C_atlas_r2-g0-c0",
+   "arm": "C",
+   "old": "none",
+   "new": "evaluating",
+   "resume_token_persisted": true,
+   "op": "insert",
+   "consumer_instance": 1,
+   "duplicate": false,
+   "eventlog_seq": 5
+  },
+  {
+   "ts": "2026-09-26T17:52:38+00:00",
+   "edit_id": "IMP_C_atlas_r2-g0-c1",
+   "arm": "C",
+   "old": "none",
+   "new": "evaluating",
+   "resume_token_persisted": true,
+   "op": "insert",
+   "consumer_instance": 2,
+   "duplicate": false,
+   "eventlog_seq": 6
+  },
+  {
+   "ts": "2026-09-26T18:06:49+00:00",
+   "edit_id": "IMP_C_atlas_r2-g0-c0",
+   "arm": "C",
+   "old": "evaluating",
+   "new": "rejected_formal",
+   "resume_token_persisted": true,
+   "op": "update",
+   "consumer_instance": 2,
+   "duplicate": false,
+   "eventlog_seq": 11
+  },
+  {
+   "ts": "2026-09-26T18:07:26+00:00",
+   "edit_id": "IMP_C_atlas_r2-g0-c1",
+   "arm": "C",
+   "old": "evaluating",
+   "new": "rejected_formal",
+   "resume_token_persisted": true,
+   "op": "update",
+   "consumer_instance": 2,
+   "duplicate": false,
+   "eventlog_seq": 14
+  }
+ ],
+ "edits": [
+  {
+   "edit_id": "IMP_C_atlas_r2-g0-c0",
+   "status": "rejected_formal",
+   "reason": "formal: 3 episode(s) with violations ['CODE-ATTR-001', 'CODE-NET-001', 'CODE-SCOPE-001', 'CODE-TEST-001']; counterfactual delta +33.3 pts"
+  },
+  {
+   "edit_id": "IMP_C_atlas_r2-g0-c1",
+   "status": "rejected_formal",
+   "reason": "formal: 1 episode(s) with violations ['CODE-ATTR-001', 'CODE-NET-001', 'CODE-SCOPE-001']; counterfactual delta +0.0 pts"
+  }
+ ]
+}

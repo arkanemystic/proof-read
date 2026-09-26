@@ -50,6 +50,9 @@ def compute_all(imp_db: str, rerun_db: str, spend_db: str, rt_gate_path: str, re
     curves = {rid: C.improvement_curve(imp_eps, imp.events, rid) for rid in rids}
     holdout = C.holdout_groups(imp_eps)
     C.mark_planned(holdout, _split_size)
+    holdout_diffs = C.holdout_diffs(holdout)
+    rep = C.replication(imp_eps)
+    rep["seed0_diff"] = holdout_diffs.get("IMPH_C")
     tl_ep = C.pick_timeline_episode(rer_eps)
     tl = None
     if tl_ep:
@@ -76,7 +79,10 @@ def compute_all(imp_db: str, rerun_db: str, spend_db: str, rt_gate_path: str, re
         "sources": sources, "imp_run_ids": rids, "curves": curves,
         "ledger": C.gate_ledger(imp.coll("edits"), rids),
         "promoted": C.promoted_edits(imp.docs, imp.events, rids),
-        "holdout": holdout, "holdout_diffs": C.holdout_diffs(holdout),
+        "holdout": holdout, "holdout_diffs": holdout_diffs, "replication": rep,
+        "lap": load_json(str(repo / "results" / "final" / "lap_replay.json")),
+        "mongo": {k: load_json(str(repo / "results" / "final" / f"mongo_{k}.json"))
+                  for k in ("migration", "indexes", "numbers", "vector_demo", "live", "actions", "tests")},
         "red_team": C.red_team(rer_eps, load_json(rt_gate_path)), "timeline": tl,
         "natural": C.natural_cheating(rer_eps),
         "coverage": C.coverage(golden), "unit_check": C.reference_unit_check(cheats),
@@ -91,7 +97,8 @@ def render_all(ctx: dict[str, Any], fig_dir: Path) -> dict[str, Path]:
     S = ctx["sources"]
     jobs = {
         "improvement": lambda p: R.fig_improvement(ctx["curves"], p, S["imp"]),
-        "holdout": lambda p: R.fig_holdout(ctx["holdout"], ctx["holdout_diffs"], p, S["imp"]),
+        "holdout": lambda p: R.fig_holdout(ctx["holdout"], ctx["holdout_diffs"], p, S["imp"],
+                                             ctx.get("replication")),
         "learned": lambda p: R.fig_learned(ctx["promoted"], p, S["imp"]),
         "gate_ledger": lambda p: R.fig_gate_ledger(ctx["ledger"], p, S["imp"]),
         "red_team": lambda p: R.fig_red_team(ctx["red_team"], ctx["timeline"], p,

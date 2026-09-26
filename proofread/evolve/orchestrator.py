@@ -10,12 +10,7 @@ idempotent puts and are simply redone on resume.
 
 CLI:
   python -m proofread.evolve.orchestrator --arm A|C|B|C-noret --db data/proofread.sqlite \
-      --generations 3 --candidates 3 --model SLUG [--tasks N] [--deadline ISO] [--seeds 0,1] \
-      [--backend sqlite|mongodb]
-
-The backend defaults to STORAGE_BACKEND (env or .env). With mongodb, documents, events and rejected-edit
-vectors go to Atlas (Vector Search for retrieval) and every verified action streams to the actions
-collection; --db is then ignored.
+      --generations 3 --candidates 3 --model SLUG [--tasks N] [--deadline ISO] [--seeds 0,1]
 """
 
 from __future__ import annotations
@@ -35,7 +30,7 @@ from proofread.evolve.config import ArmConfig, arm_preset
 from proofread.evolve.gates import decide, screening_reject
 from proofread.evolve.patching import PatchError, validate_edit
 from proofread.evolve.proposer import Proposer
-from proofread.store.backend import vector_index_for
+from proofread.store.factory import make_vector_index
 from proofread.store.vector import embed
 
 
@@ -56,7 +51,7 @@ class ArmRun:
         self.deadline_ts = deadline_ts
         self.rid = cfg.rid
         self.sem = asyncio.Semaphore(max(1, cfg.concurrency))
-        self.index = vector_index_for(store, namespace=f"rejected:{self.rid}")
+        self.index = make_vector_index(store, namespace=f"rejected:{self.rid}")  # numpy, or Atlas for a MongoStore
         self.proposer = Proposer(proposer_client, self.index, budget_key=cfg.budget_key, retrieval=cfg.retrieval,
                                  k=cfg.retrieval_k, max_tokens=cfg.proposer_max_tokens,
                                  temperature=cfg.proposer_temperature, trace_chars=cfg.trace_chars,
@@ -396,10 +391,7 @@ def build_real_components(args: argparse.Namespace, store: Store) -> tuple[Any, 
             proposer_model = "claude-opus-5-5"
     proposer = _call_with_supported(make_client, role="proposer", model=proposer_model)
     # W4 resolves sandbox (W1), verifier (W3), graders and agent client lazily when omitted.
-    from proofread.store.backend import action_sink
-
-    extra: dict[str, Any] = {"trace_dir": args.trace_dir,
-                             "action_sink": action_sink(getattr(args, "backend", None) or None)}
+    extra: dict[str, Any] = {"trace_dir": args.trace_dir}
     runner = _call_with_supported(make_episode_runner, **extra)
     return runner, proposer
 
@@ -411,9 +403,9 @@ def _parse_deadline(s: str | None) -> float | None:
 
 
 async def _amain(args: argparse.Namespace) -> dict[str, Any]:
-    from proofread.store.backend import open_backend
+    from proofread.store.factory import make_eventlog, make_store  # SQLite unless MONGODB_URI is set
 
-    store, log = open_backend(args.db, getattr(args, "backend", "") or None)
+    store, log = make_store(args.db), make_eventlog(args.db)
     cfg = arm_preset(args.arm, generations=args.generations, candidates_per_generation=args.candidates,
                      agent_model=args.model, max_tasks=args.tasks, concurrency=args.concurrency,
                      seeds=[int(x) for x in args.seeds.split(",")], split=args.split,
@@ -429,8 +421,6 @@ def main(argv: list[str] | None = None) -> None:
     ap = argparse.ArgumentParser(prog="python -m proofread.evolve.orchestrator")
     ap.add_argument("--arm", required=True, choices=["A", "C", "B", "C-noret"])
     ap.add_argument("--db", default="data/proofread.sqlite")
-    ap.add_argument("--backend", choices=["", "sqlite", "mongodb"], default="",
-                    help="storage backend (default: STORAGE_BACKEND from env/.env, else sqlite)")
     ap.add_argument("--generations", type=int, default=3)
     ap.add_argument("--candidates", type=int, default=3)
     ap.add_argument("--model", required=True, help="inner agent model slug")

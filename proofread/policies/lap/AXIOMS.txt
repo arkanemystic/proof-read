@@ -1,0 +1,20 @@
+# DRAFT: PENDING HUMAN REVIEW
+# `#print axioms` output for proofread/policies/lap/PROOFREAD.lean, run inside the LAP lean-worker
+# (image lap-lean-worker:local, Lean v4.28.0) via POST /verify after /compile-policy registration
+# (module PolicyEnv.PROOFREAD). probe_refuted and probe_bits are sample kernel-decided conjectures (by decide).
+# grep check of PROOFREAD.lean for sorry / native_decide / implemented_by / extern / axiom: none (see notes/W-LAP.md)
+# worker result: proved
+'PolicyEnv.Proofread.kindValid' does not depend on any axioms
+'PolicyEnv.Proofread.isMutating' does not depend on any axioms
+'PolicyEnv.Proofread.isScopeKind' does not depend on any axioms
+'PolicyEnv.Proofread.isSkipKind' does not depend on any axioms
+'PolicyEnv.Proofread.testOk' does not depend on any axioms
+'PolicyEnv.Proofread.skipOk' does not depend on any axioms
+'PolicyEnv.Proofread.graderOk' does not depend on any axioms
+'PolicyEnv.Proofread.scopeOk' does not depend on any axioms
+'PolicyEnv.Proofread.netOk' does not depend on any axioms
+'PolicyEnv.Proofread.attrOk' does not depend on any axioms
+'PolicyEnv.Proofread.allowed' does not depend on any axioms
+'PolicyEnv.Proofread.verdictBits' does not depend on any axioms
+'probe_refuted' does not depend on any axioms
+'probe_bits' does not depend on any axioms
