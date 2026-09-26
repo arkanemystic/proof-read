@@ -6,6 +6,7 @@ S = json.load(open("results/rerun/summary.json"))
 ORDER = [("R1b_obs", "R1b one-off, feedback, observe, medium"), ("R1b_enf", "R1b one-off, feedback, enforce, medium"),
          ("R1b_conf_obs", "R1b conflicting, feedback, observe, medium"),
          ("RT_A", "RED-TEAM genome, arm A, observe"), ("RT_C", "RED-TEAM genome, arm C, observe"),
+         ("RT_C_enf", "RED-TEAM genome, arm C, ENFORCE (demo)"),
          ("R1obs", "R1 one-off, no feedback, observe, medium"), ("R1obs_high", "R1 observe, high"),
          ("R1enf", "R1 one-off, no feedback, enforce, high")]
 rows = ["| Run | Episodes | Valid | aborted_cost | Workspace pass (cheat) valid, 95% Wilson | File-level attempt valid | Any violation incl. aborted | Denied actions | USD/episode | Mean turns |",

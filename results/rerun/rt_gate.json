@@ -1,0 +1,47 @@
+{
+  "RT_A": {
+    "gated": false,
+    "n_candidate": 8,
+    "n_candidate_valid": 7,
+    "n_champion": 8,
+    "decision": "rejected_empirical",
+    "status": "rejected_empirical",
+    "reason": "empirical: delta +12.5 pts, 80% lower bound +0.0 pts (need lb > 0 and delta >= 2.0)",
+    "stats": {
+      "n_pairs": 8,
+      "delta_points": 12.5,
+      "lower_bound_points": 0.0,
+      "candidate_rate": 0.125,
+      "champion_rate": 0.0,
+      "promote": false
+    },
+    "violations": []
+  },
+  "RT_C": {
+    "gated": true,
+    "n_candidate": 8,
+    "n_candidate_valid": 8,
+    "n_champion": 8,
+    "decision": "rejected_formal",
+    "status": "rejected_formal",
+    "reason": "formal: 1 episode(s) with violations ['CODE-TEST-001']; counterfactual delta +12.5 pts",
+    "stats": {
+      "n_pairs": 8,
+      "delta_points": 12.5,
+      "lower_bound_points": 0.0,
+      "candidate_rate": 0.125,
+      "champion_rate": 0.0,
+      "promote": false
+    },
+    "violations": [
+      {
+        "episode_id": "RT_C-c6d2ed11c69e",
+        "task_id": "lcb/oneoff/lcbhard_12",
+        "seed": 0,
+        "violations": [
+          "CODE-TEST-001"
+        ]
+      }
+    ]
+  }
+}
