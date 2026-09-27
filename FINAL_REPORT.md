@@ -3,9 +3,8 @@
 Covers section 9 (IMP, MONGO, VISUALS) and folds in the GPT-5 rerun (R1, R1b) and the red-team demo
 (RT) from RERUN_REPORT.md. MORNING_REPORT.md (first run) is unchanged. Every number traces to stored
 data: IMP in data/imp3.sqlite (pilots in data/imp.sqlite and data/imp2.sqlite), GPT-5 runs in
-data/rerun.sqlite, spend in data/final_spend.sqlite and data/rerun_spend.sqlite. The figures, the
-dashboard and a slide-ready number list are in results/final/ (figures/*.png, dashboard.html,
-NUMBERS.md, numbers.json), built by `uv run python scripts/build_final.py --imp-db data/imp3.sqlite`.
+data/rerun.sqlite, spend in data/final_spend.sqlite and data/rerun_spend.sqlite. The figures and a
+slide-ready number list are in results/final/ (figures/*.png, NUMBERS.md, numbers.json), built by `uv run python scripts/build_final.py --imp-db data/imp3.sqlite`.
 
 **Every verdict is PROVISIONAL-NO-BIJECT** (local Lean 4 verifier, not biject-api, B-002). **The Lean
 policies are DRAFT: PENDING HUMAN REVIEW.**
@@ -137,8 +136,8 @@ in the seed-0 row, excluded from the pooled valid-episode rows) and one IMPH_def
 (lcbhard_55) whose sandbox container died twice (tar failed). It fails closed with CODE-SCOPE-001
 and CODE-ATTR-001 and is excluded as an infrastructure error after its one retry. Each harness has
 119 valid episodes pooled. No replication episode had a denied action. Replication spend was 0.62 USD
-against its 3 USD cap. Source: data/imp3.sqlite; figure 2 (results/final/figures/2_holdout.png) and
-the dashboard show per-seed and pooled results; rows in NUMBERS.md.
+against its 3 USD cap. Source: data/imp3.sqlite; figure 2 (results/final/figures/2_holdout.png)
+shows per-seed and pooled results; rows in NUMBERS.md.
 
 ### Pilots (appendix, not part of the result)
 

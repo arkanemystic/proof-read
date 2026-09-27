@@ -176,7 +176,7 @@ proofread/
   genome/     genome schema, trust boundary, JSON Patch
   evolve/     proposer, formal + empirical gates, orchestrator
   store/      MongoDB Atlas + SQLite backends, vector index
-results/final/  figures, dashboard.html, NUMBERS.md, champion genomes
+results/final/  figures, NUMBERS.md, champion genomes
 ```
 
 ## Further reading

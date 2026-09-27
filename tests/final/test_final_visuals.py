@@ -1,4 +1,4 @@
-"""Final visuals (section 9): every figure function, NUMBERS.md/numbers.json and the dashboard, on synthetic
+"""Final visuals (section 9): every figure function, NUMBERS.md/numbers.json, on synthetic
 fixtures and on missing data."""
 
 from __future__ import annotations
@@ -148,7 +148,7 @@ def test_figures_render_with_empty_inputs(tmp_path):
         _png(p)
 
 
-# ------------------------------------------------------------------ NUMBERS and dashboard
+# ------------------------------------------------------------------ NUMBERS
 def test_numbers_trace_to_sources(ctx):
     nums = build_numbers(ctx)
     ids = {n["id"] for n in nums}
@@ -169,13 +169,8 @@ def test_main_end_to_end(env):
     assert "| Headline | Value | n | CI | Source |" in md and "PROVISIONAL-NO-BIJECT" in md
     js = json.loads((out / "numbers.json").read_text())
     assert js["numbers"] and js["meta"]["imp_run_ids"] == ["IMP_C", "IMP_A"]
-    html = (out / "dashboard.html").read_text()
-    assert html.count("data:image/png;base64,") == 8
-    assert "src='http" not in html and 'src="http' not in html and "<link" not in html
-    assert "RED-TEAM" in html
     assert len(list((out / "figures").glob("*.png"))) == 8
-    for text in (md, html):
-        assert "\u2014" not in text  # no em dashes
+    assert "\u2014" not in md  # no em dashes
 
 
 def test_main_with_missing_sources(tmp_path):
@@ -185,7 +180,7 @@ def test_main_with_missing_sources(tmp_path):
                  "--out", str(out)]) == 0
     md = (out / "NUMBERS.md").read_text()
     assert "no data yet" in md
-    assert (out / "dashboard.html").exists() and len(list((out / "figures").glob("*.png"))) == 8
+    assert len(list((out / "figures").glob("*.png"))) == 8
 
 
 def test_loader_is_read_only(env):

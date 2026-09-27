@@ -16,7 +16,7 @@ from typing import Any
 from proofread.analysis.final import compute as C
 from proofread.analysis.final import render as R
 from proofread.analysis.final.io import load_golden, load_json, load_spend, load_store, load_trace
-from proofread.analysis.final.report import build_numbers, write_dashboard, write_numbers
+from proofread.analysis.final.report import build_numbers, write_numbers
 
 REPO = Path(__file__).resolve().parents[3]
 
@@ -137,7 +137,6 @@ def main(argv: list[str] | None = None) -> int:
             "figures": {k: str(v) for k, v in figs.items()}}
     nums = build_numbers(ctx)
     write_numbers(nums, out, meta)
-    write_dashboard(ctx, figs, nums, out / "dashboard.html", meta)
     print(f"[build_final] {len(figs)} figures, {len(nums)} numbers in {time.time() - t0:.1f}s -> {out}")
     print(f"[build_final] counts: {ctx['counts']}; IMP run ids: {ctx['imp_run_ids'] or 'none'}; "
           f"holdout arms: {list(ctx['holdout']) or 'none'}")
